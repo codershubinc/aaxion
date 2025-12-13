@@ -1,24 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LocalDrive-RS</title>
     <link rel="stylesheet" href="/assets/style.css">
 </head>
+
 <body>
     <div class="container">
         <h2>LocalDrive-RS</h2>
-        
+
         <input type="file" id="file" style="display:none" onchange="handleFileSelect(this)">
-        
+
         <div class="upload-area" id="drop-zone" onclick="document.getElementById('file').click()">
             <span class="upload-icon">📂</span>
             <div id="label">Click to select or drag file here</div>
         </div>
 
         <button class="btn" onclick="upload()" id="btn">Start Upload</button>
-        
+
         <div class="progress-container" id="progress">
             <div class="progress-bar-bg">
                 <div class="progress-bar-fill" id="bar"></div>
@@ -78,40 +80,40 @@
         }
 
         function handleFileSelect(el) {
-            if(el.files.length > 0) {
+            if (el.files.length > 0) {
                 label.innerHTML = `<span class="file-name">${el.files[0].name}</span>`;
                 label.style.color = 'var(--text-primary)';
             }
         }
-        
+
         function upload() {
             let file = fileInput.files[0];
-            if(!file) return alert("Please select a file first!");
-            
+            if (!file) return alert("Please select a file first!");
+
             let btn = document.getElementById('btn');
             btn.disabled = true;
             btn.innerText = "Uploading...";
             document.getElementById('progress').style.display = 'block';
             document.body.classList.add('uploading');
-            
+
             let xhr = new XMLHttpRequest();
             xhr.open("POST", "/upload", true);
             let start = Date.now();
-            
+
             xhr.upload.onprogress = e => {
-                if(e.lengthComputable) {
+                if (e.lengthComputable) {
                     let pct = (e.loaded / e.total) * 100;
                     let sec = (Date.now() - start) / 1000;
-                    let speed = sec > 0 ? (e.loaded/sec)/(1024*1024) : 0;
-                    
+                    let speed = sec > 0 ? (e.loaded / sec) / (1024 * 1024) : 0;
+
                     document.getElementById('bar').style.width = pct + "%";
                     document.getElementById('pct').innerText = Math.round(pct) + "%";
                     document.getElementById('speed').innerText = speed.toFixed(2) + " MB/s";
                 }
             };
-            
-            xhr.onload = () => { 
-                btn.disabled = false; 
+
+            xhr.onload = () => {
+                btn.disabled = false;
                 btn.innerText = "Start Upload";
                 document.body.classList.remove('uploading');
                 if (xhr.status === 200) {
@@ -127,7 +129,7 @@
                     alert("Upload Failed: " + xhr.responseText);
                 }
             };
-            
+
             xhr.onerror = () => {
                 btn.disabled = false;
                 btn.innerText = "Start Upload";
@@ -135,10 +137,11 @@
                 alert("Network Error");
             };
 
-            let fd = new FormData(); 
+            let fd = new FormData();
             fd.append("file", file);
             xhr.send(fd);
         }
     </script>
 </body>
+
 </html>

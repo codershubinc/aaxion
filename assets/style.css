@@ -57,7 +57,8 @@ h2 {
     overflow: hidden;
 }
 
-.upload-area:hover, .upload-area.dragover {
+.upload-area:hover,
+.upload-area.dragover {
     border-color: var(--accent-color);
     background-color: rgba(59, 130, 246, 0.05);
 }
@@ -146,9 +147,17 @@ h2 {
 
 /* Animations */
 @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 .uploading .upload-icon {

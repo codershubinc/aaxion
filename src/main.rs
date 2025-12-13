@@ -1,7 +1,7 @@
 use axum::{
     extract::{Multipart, DefaultBodyLimit},
     response::{Html, IntoResponse},
-    routing::post,
+    routing::{get, post},
     Router,
 };
 use std::net::SocketAddr;
@@ -35,8 +35,10 @@ async fn main() {
         .route_service("/", ServeFile::new("assets/index.html"))
         // Serve static assets (css, js, etc.)
         .nest_service("/assets", ServeDir::new("assets"))
-        // Serve the static files (Browse view) from the current directory
-        .nest_service("/files", ServeDir::new("."))
+        // Serve the uploaded files (Raw view)
+        .nest_service("/raw", ServeDir::new(UPLOAD_DIR))
+        // The File Browser UI
+        .route("/files", get(list_files))
         // The Upload Logic
         .route("/upload", post(upload_handler))
         .layer(DefaultBodyLimit::disable()); // Disable default 2MB limit for streaming
@@ -57,7 +59,68 @@ async fn main() {
 // HANDLERS
 // ---------------------------------------------------------
 
+// List files in the upload directory
+async fn list_files() -> impl IntoResponse {
+    let mut entries = match tokio::fs::read_dir(UPLOAD_DIR).await {
+        Ok(e) => e,
+        Err(_) => return Html("<h1>No files found (or error reading directory)</h1>".to_string()),
+    };
 
+    let mut file_list = String::new();
+    while let Ok(Some(entry)) = entries.next_entry().await {
+        let path = entry.path();
+        if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+            // Skip hidden files
+            if !name.starts_with('.') {
+                let is_dir = path.is_dir();
+                let display_name = if is_dir { format!("{}/", name) } else { name.to_string() };
+                // Link to /raw/filename
+                file_list.push_str(&format!(
+                    "<li><a href=\"/raw/{}\" target=\"_blank\">{}</a></li>",
+                    name, display_name
+                ));
+            }
+        }
+    }
+
+    if file_list.is_empty() {
+        file_list = "<li><em>No files uploaded yet.</em></li>".to_string();
+    }
+
+    let html = format!(
+        r#"
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Files - LocalDrive-RS</title>
+            <link rel="stylesheet" href="/assets/style.css">
+            <style>
+                .file-list {{ list-style: none; padding: 0; text-align: left; width: 100%; max-width: 600px; margin: 0 auto; }}
+                .file-list li {{ padding: 12px; border-bottom: 1px solid #333; transition: background 0.2s; }}
+                .file-list li:hover {{ background: #222; }}
+                .file-list a {{ text-decoration: none; color: #eee; display: flex; align-items: center; gap: 10px; }}
+                .file-list a:hover {{ color: #3b82f6; }}
+                .back-link {{ margin-top: 20px; display: inline-block; color: #94a3b8; text-decoration: none; }}
+                .back-link:hover {{ color: #fff; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h2>📂 Uploaded Files</h2>
+                <ul class="file-list">
+                    {}
+                </ul>
+                <br>
+                <a href="/" class="back-link">&larr; Back to Upload</a>
+            </div>
+        </body>
+        </html>
+        "#,
+        file_list
+    );
+
+    Html(html)
+}
 
 // Handle Streaming Uploads
 async fn upload_handler(mut multipart: Multipart) -> impl IntoResponse {
