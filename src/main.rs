@@ -35,10 +35,11 @@ async fn main() {
     // 3. Define Routes
     let app = Router::new()
         .route_service("/", ServeFile::new("assets/index.html"))
+        .route_service("/files", ServeFile::new("assets/files.html"))
         .nest_service("/assets", ServeDir::new("assets"))
         .nest_service("/raw", ServeDir::new(UPLOAD_DIR))
         // USE THE MODULE HERE: handlers::function_name
-        .route("/files", get(handlers::list_files))
+        .route("/api/files/list", get(handlers::list_files))
         .route("/upload", post(handlers::upload_handler))
         .layer(DefaultBodyLimit::disable());
 
