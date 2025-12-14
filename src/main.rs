@@ -40,6 +40,7 @@ async fn main() {
         .nest_service("/raw", ServeDir::new(UPLOAD_DIR))
         // USE THE MODULE HERE: handlers::function_name
         .route("/api/files/list", get(handlers::list_files))
+        .route("/api/files/download/:filename", get(handlers::download_file))
         .route("/upload", post(handlers::upload_handler))
         .layer(DefaultBodyLimit::disable());
 

@@ -63,7 +63,7 @@
                     <div class="file-name-text">${file.name}</div>
                     <div class="file-meta">${file.is_dir ? 'Directory' : formatBytes(file.size)}</div>
                 </div>
-                ${!file.is_dir ? `<a href="/uploads/${file.name}" class="action-btn" download target="_blank" title="Download">⬇️</a>` : ''}
+                ${!file.is_dir ? `<a href="/api/files/download/${file.name}" class="action-btn" title="Download">⬇️</a>` : ''}
             </div>
             `).join('');
 
