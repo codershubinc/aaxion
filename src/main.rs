@@ -4,7 +4,7 @@ use axum::{
     routing::{any, get, post},
     Router,
 };
-use dav_server::{localfs::LocalFs, fakels::FakeLs, DavHandler};
+use dav_server::{fakels::FakeLs, localfs::LocalFs, DavHandler};
 use std::{net::SocketAddr, sync::Arc};
 use tokio::fs;
 use tower_http::services::{ServeDir, ServeFile};
@@ -19,13 +19,17 @@ const PORT: u16 = 8080;
 async fn main() {
     // 1. Logging
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::new("localdrive_rs=debug,tower_http=debug"))
+        .with(tracing_subscriber::EnvFilter::new(
+            "localdrive_rs=debug,tower_http=debug",
+        ))
         .with(tracing_subscriber::fmt::layer())
         .init();
 
     // 2. Create Directory
     if fs::metadata(UPLOAD_DIR).await.is_err() {
-        fs::create_dir(UPLOAD_DIR).await.expect("Failed to create upload dir");
+        fs::create_dir(UPLOAD_DIR)
+            .await
+            .expect("Failed to create upload dir");
     }
 
     // 3. Setup WebDAV Handler (The "Drive" Logic)
@@ -45,12 +49,15 @@ async fn main() {
         .route_service("/files", ServeFile::new("assets/files.html"))
         .nest_service("/assets", ServeDir::new("assets"))
         .route("/api/files/list", get(handlers::list_files))
-        .route("/api/files/download/:filename", get(handlers::download_file))
+        .route(
+            "/api/files/download/:filename",
+            get(handlers::download_file),
+        )
         .route("/upload", post(handlers::upload_handler))
         // --- NEW WEBDAV ROUTE ---
         // We use 'any' because WebDAV uses method like PROPFIND, MKCOL, etc.
         .route("/webdav", any(webdav_handler))
-        .route("/webdav/*path", any(webdav_handler)) 
+        .route("/webdav/*path", any(webdav_handler))
         .with_state(dav_server);
 
     // 5. Start Server
@@ -69,9 +76,6 @@ async fn main() {
 }
 
 // The "Glue" Function: Passes Axum requests to the WebDAV engine
-async fn webdav_handler(
-    State(dav): State<Arc<DavHandler>>,
-    req: Request,
-) -> impl IntoResponse {
+async fn webdav_handler(State(dav): State<Arc<DavHandler>>, req: Request) -> impl IntoResponse {
     dav.handle(req).await
 }
