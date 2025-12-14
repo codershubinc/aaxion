@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Request, State},
+    extract::{DefaultBodyLimit, Request, State},
     response::IntoResponse,
     routing::{any, get, post},
     Router,
@@ -58,7 +58,8 @@ async fn main() {
         // We use 'any' because WebDAV uses method like PROPFIND, MKCOL, etc.
         .route("/webdav", any(webdav_handler))
         .route("/webdav/*path", any(webdav_handler))
-        .with_state(dav_server);
+        .with_state(dav_server)
+        .layer(DefaultBodyLimit::disable());
 
     // 5. Start Server
     let addr = SocketAddr::from(([0, 0, 0, 0], PORT));
