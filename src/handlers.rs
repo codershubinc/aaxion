@@ -1,14 +1,14 @@
 use axum::{
-    extract::{Multipart, Path},
-    response::{Html, IntoResponse, Json},
-    http::{header, StatusCode},
     body::{Body, Bytes},
+    extract::{Multipart, Path},
+    http::{header, StatusCode},
+    response::{Html, IntoResponse, Json},
 };
+use futures::stream;
 use serde::Serialize;
 use std::path::PathBuf;
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use futures::stream;
 
 const UPLOAD_DIR: &str = "./uploads";
 
@@ -51,7 +51,6 @@ pub async fn list_files() -> impl IntoResponse {
 
     Json(files)
 }
-
 
 pub async fn upload_handler(mut multipart: Multipart) -> impl IntoResponse {
     while let Ok(Some(mut field)) = multipart.next_field().await {
@@ -105,7 +104,10 @@ pub async fn download_file(Path(filename): Path<String>) -> impl IntoResponse {
 
     let headers = [
         (header::CONTENT_TYPE, "application/octet-stream".to_string()),
-        (header::CONTENT_DISPOSITION, format!("attachment; filename=\"{}\"", filename)),
+        (
+            header::CONTENT_DISPOSITION,
+            format!("attachment; filename=\"{}\"", filename),
+        ),
     ];
 
     (headers, body).into_response()
