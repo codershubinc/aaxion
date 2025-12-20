@@ -13,7 +13,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 mod handlers;
 
 const UPLOAD_DIR: &str = "./uploads";
-const PORT: u16 = 8080;
+const PORT: u16 = 18875;
 
 #[tokio::main]
 async fn main() {

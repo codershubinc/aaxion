@@ -37,7 +37,7 @@ cp -r assets /opt/aaxion/
 
 # 5. Install Systemd Service
 echo -e "${BLUE}⚙️  Installing Systemd Service...${NC}"
-cp setup/linux/aaxion.service /etc/systemd/system/
+cp setup/linux-installer/aaxion.service /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable aaxion
 systemctl restart aaxion
@@ -49,10 +49,10 @@ USER_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
 
 echo -e "${BLUE}🖥️  Installing Desktop Shortcut for $REAL_USER...${NC}"
 mkdir -p "$USER_HOME/.local/share/applications"
-cp setup/linux/aaxion.desktop "$USER_HOME/.local/share/applications/"
+cp setup/linux-installer/aaxion.desktop "$USER_HOME/.local/share/applications/"
 chown "$REAL_USER:$REAL_USER" "$USER_HOME/.local/share/applications/aaxion.desktop"
 
 echo -e "${GREEN}✅ Installation Complete!${NC}"
-echo -e "   - Service is running at: http://localhost:8080"
+echo -e "   - Service is running at: http://localhost:18875"
 echo -e "   - Files are stored in:   /opt/aaxion/uploads"
 echo -e "   - Check status with:     systemctl status aaxion"
