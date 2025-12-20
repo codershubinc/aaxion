@@ -14,6 +14,10 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
+echo -e "${BLUE}Stopping service if running${NC}"
+systemctl stop aaxion 2>/dev/null
+
+
 # 2. Build the Project
 echo -e "${BLUE}📦 Building Release Binary...${NC}"
 # We assume the script is run from setup/linux, so we go up two levels to root

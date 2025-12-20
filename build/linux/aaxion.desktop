@@ -1,7 +1,7 @@
 [Desktop Entry]
-Name=Aaxion Drive
+Name=Aaxion Drive 
 Comment=Open Local File Server
-Exec=xdg-open http://localhost:8080
+Exec=xdg-open http://localhost:18875
 Icon=folder-remote
 Terminal=false
 Type=Application
