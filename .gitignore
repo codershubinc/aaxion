@@ -2,3 +2,10 @@
 *.iso
 uploads/
 /uploads
+
+# Installer & Distribution Files
+setup/linux-installer/
+
+# OS Generated Files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,14 @@
+[Unit]
+Description=Aaxion File Server
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/aaxion
+ExecStart=/opt/aaxion/aaxion-server
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
