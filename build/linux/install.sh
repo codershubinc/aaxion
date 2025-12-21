@@ -29,6 +29,10 @@ if ! cargo build --release; then
     exit 1
 fi
 
+# remove old installation if exists
+echo -e "${BLUE}🧹 Removing old installation...${NC}
+rm -rf /opt/aaxion"
+
 # 3. Create Directories
 echo -e "${BLUE}📂 Creating /opt/aaxion...${NC}"
 mkdir -p /opt/aaxion
@@ -36,7 +40,7 @@ mkdir -p /opt/aaxion/uploads
 
 # 4. Copy Files
 echo -e "${BLUE}🚚 Copying files...${NC}"
-cp target/release/localdrive-rs /opt/aaxion/aaxion-server
+cp target/release/aaxion /opt/aaxion/aaxion-server
 cp -r assets /opt/aaxion/
 
 # 5. Install Systemd Service
