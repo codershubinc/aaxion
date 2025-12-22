@@ -9,15 +9,18 @@ use axum::{
 use futures::StreamExt;
 use serde::Deserialize;
 use std::path::{Path, PathBuf};
+use std::time::SystemTime;
 use tokio::fs::File;
 use tokio::io::{AsyncWriteExt, BufWriter};
 use tokio_util::io::StreamReader;
 
+/// Root upload directory
 const UPLOAD_DIR: &str = "/home/swap/aaxion/";
 
 #[derive(Deserialize)]
 pub struct ListFilesQuery {
     pub dir: Option<String>,
+    pub name: Option<String>, // optional original filename from client
 }
 
 #[derive(Deserialize)]
@@ -40,6 +43,68 @@ pub struct DeleteRequest {
 pub struct DownloadQuery {
     pub path: String,
 }
+
+/// --- Helper utilities ---------------------------------------------------
+
+fn sanitize_filename(raw: &str) -> String {
+    // Keep only the basename to avoid directory traversal
+    let base = Path::new(raw)
+        .file_name()
+        .and_then(|s| s.to_str())
+        .unwrap_or("uploaded_file");
+
+    // Allow only alphanumeric and a few safe punctuation chars; replace the rest with '_'
+    let allowed = |c: char| c.is_ascii_alphanumeric() || ".-_ ".contains(c);
+    let mut cleaned: String = base
+        .chars()
+        .map(|c| if allowed(c) { c } else { '_' })
+        .collect();
+
+    if cleaned.is_empty() {
+        cleaned = "uploaded_file".to_string();
+    }
+
+    // Limit length (filesystem-friendly)
+    if cleaned.len() > 255 {
+        cleaned.truncate(255);
+    }
+
+    cleaned
+}
+
+fn resolve_unique_path(upload_dir: &str, name: &str) -> (String, PathBuf) {
+    let cleaned = sanitize_filename(name);
+    let stem = Path::new(&cleaned)
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("file")
+        .to_string();
+    let ext = Path::new(&cleaned)
+        .extension()
+        .and_then(|s| s.to_str())
+        .map(|s| s.to_string());
+
+    let mut candidate = cleaned.clone();
+    let mut path = PathBuf::from(upload_dir).join(&candidate);
+
+    // If it already exists, append a timestamp
+    while path.exists() {
+        let ts = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_millis();
+        candidate = if let Some(ref e) = ext {
+            format!("{}-{}.{}", stem, ts, e)
+        } else {
+            format!("{}-{}", stem, ts)
+        };
+        path = PathBuf::from(upload_dir).join(&candidate);
+    }
+
+    (candidate, path)
+}
+
+/// --- Handlers -----------------------------------------------------------
 
 pub async fn list_files(Query(params): Query<ListFilesQuery>) -> Response {
     let requested_dir = params.dir.unwrap_or_else(|| UPLOAD_DIR.to_string());
@@ -86,6 +151,7 @@ pub async fn list_files(Query(params): Query<ListFilesQuery>) -> Response {
 
 pub async fn upload_file(
     Query(params): Query<ListFilesQuery>,
+    headers: HeaderMap,
     mut multipart: Multipart,
 ) -> Response {
     let upload_dir = params.dir.unwrap_or_else(|| UPLOAD_DIR.to_string());
@@ -106,18 +172,24 @@ pub async fn upload_file(
         let name = field.name().unwrap_or("").to_string();
 
         if name == "file" {
-            let file_name = match field.file_name() {
-                Some(n) => n.to_string(),
-                None => continue,
-            };
+            // Prefer query.name -> X-Original-Filename header -> multipart filename
+            let raw_name = params
+                .name
+                .clone()
+                .or_else(|| {
+                    headers
+                        .get("x-original-filename")
+                        .and_then(|h| h.to_str().ok().map(|s| s.to_string()))
+                })
+                .or_else(|| field.file_name().map(|s| s.to_string()))
+                .unwrap_or_else(|| "uploaded_file".to_string());
 
-            let safe_filename = match Path::new(&file_name).file_name() {
-                Some(name) => name.to_string_lossy(),
-                None => continue,
-            };
-            let file_path = PathBuf::from(&upload_dir).join(safe_filename.as_ref());
+            let (final_filename, file_path) = resolve_unique_path(&upload_dir, &raw_name);
 
-            println!("⬇️  Streaming start (Multipart): {}", safe_filename);
+            println!(
+                "⬇️  Streaming start (Multipart): {} -> {}",
+                raw_name, final_filename
+            );
 
             if let Err(e) = tokio::fs::create_dir_all(&upload_dir).await {
                 return (
@@ -157,11 +229,11 @@ pub async fn upload_file(
                 }
             }
 
-            println!("✅ Upload complete: {}", safe_filename);
+            println!("✅ Upload complete: {}", final_filename);
             return Json(serde_json::json!({
                 "status": "success",
-                "message": format!("✅ Upload complete: {}", safe_filename),
-                "filename": safe_filename.to_string()
+                "message": format!("✅ Upload complete: {}", final_filename),
+                "filename": final_filename
             }))
             .into_response();
         }
@@ -195,20 +267,28 @@ pub async fn upload_raw(
             .into_response();
     }
 
-    let file_name = headers
-        .get("x-file-name")
-        .and_then(|h| h.to_str().ok())
-        .map(|s| s.to_string())
+    // Prefer query.name -> x-original-filename -> x-file-name -> fallback
+    let raw_name = params
+        .name
+        .clone()
+        .or_else(|| {
+            headers
+                .get("x-original-filename")
+                .and_then(|h| h.to_str().ok().map(|s| s.to_string()))
+        })
+        .or_else(|| {
+            headers
+                .get("x-file-name")
+                .and_then(|h| h.to_str().ok().map(|s| s.to_string()))
+        })
         .unwrap_or_else(|| "uploaded_file".to_string());
 
-    let safe_filename = match Path::new(&file_name).file_name() {
-        Some(name) => name.to_string_lossy(),
-        None => "uploaded_file".into(),
-    };
+    let (final_filename, file_path) = resolve_unique_path(&upload_dir, &raw_name);
 
-    let file_path = PathBuf::from(&upload_dir).join(safe_filename.as_ref());
-
-    println!("⬇️  Streaming start (Raw): {}", safe_filename);
+    println!(
+        "⬇️  Streaming start (Raw): {} -> {}",
+        raw_name, final_filename
+    );
 
     if let Err(e) = tokio::fs::create_dir_all(&upload_dir).await {
         return (
@@ -251,17 +331,18 @@ pub async fn upload_raw(
             .into_response();
     }
 
-    println!("✅ Streaming complete: {}", safe_filename);
+    println!("✅ Streaming complete: {}", final_filename);
     Json(serde_json::json!({
         "status": "success",
-        "message": format!("✅ Upload complete: {}", safe_filename),
-        "filename": safe_filename.to_string()
+        "message": format!("✅ Upload complete: {}", final_filename),
+        "filename": final_filename
     }))
     .into_response()
 }
 
 pub async fn stream_upload(
     Query(params): Query<ListFilesQuery>,
+    headers: HeaderMap,
     mut multipart: Multipart,
 ) -> Response {
     let upload_dir = params.dir.unwrap_or_else(|| UPLOAD_DIR.to_string());
@@ -278,18 +359,24 @@ pub async fn stream_upload(
         let name = field.name().unwrap_or("").to_string();
 
         if name == "file" {
-            let file_name = match field.file_name() {
-                Some(n) => n.to_string(),
-                None => continue,
-            };
+            // Prefer params.name -> header -> multipart filename
+            let raw_name = params
+                .name
+                .clone()
+                .or_else(|| {
+                    headers
+                        .get("x-original-filename")
+                        .and_then(|h| h.to_str().ok().map(|s| s.to_string()))
+                })
+                .or_else(|| field.file_name().map(|s| s.to_string()))
+                .unwrap_or_else(|| "uploaded_file".to_string());
 
-            let safe_filename = match Path::new(&file_name).file_name() {
-                Some(name) => name.to_string_lossy(),
-                None => continue,
-            };
-            let file_path = PathBuf::from(&upload_dir).join(safe_filename.as_ref());
+            let (final_filename, file_path) = resolve_unique_path(&upload_dir, &raw_name);
 
-            println!("⬇️  Advanced Streaming start: {}", safe_filename);
+            println!(
+                "⬇️  Advanced Streaming start: {} -> {}",
+                raw_name, final_filename
+            );
 
             if let Err(e) = tokio::fs::create_dir_all(&upload_dir).await {
                 return (
@@ -331,11 +418,11 @@ pub async fn stream_upload(
                     .into_response();
             }
 
-            println!("✅ Advanced Streaming complete: {}", safe_filename);
+            println!("✅ Advanced Streaming complete: {}", final_filename);
             return Json(serde_json::json!({
                 "status": "success",
-                "message": format!("✅ Upload complete: {}", safe_filename),
-                "filename": safe_filename.to_string()
+                "message": format!("✅ Upload complete: {}", final_filename),
+                "filename": final_filename
             }))
             .into_response();
         }
