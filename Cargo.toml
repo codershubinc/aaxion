@@ -15,3 +15,4 @@ axum = { version = "0.7", features = ["multipart", "http1"] }
 dav-server = "0.7"
 sqlx = { version = "0.8.6",  features = ["runtime-tokio-native-tls", "macros", "sqlite"] }
 tokio-util = { version = "0.7", features = ["io"] }
+libc = "0.2"

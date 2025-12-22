@@ -15,4 +15,7 @@ pub fn routes() -> Router {
         .route("/create-file", post(handlers::create_file))
         .route("/delete", post(handlers::delete_item))
         .route("/download", get(handlers::download_file))
+        .route("/storage", get(handlers::storage_info))
+        .route("/storage/mounts", get(handlers::storage_mounts))
+        .route("/storage/system", get(handlers::storage_system))
 }
