@@ -1,5 +1,5 @@
-use axum::{extract::Query, response::IntoResponse, Json, http::StatusCode};
-use serde::{Serialize, Deserialize};
+use axum::{extract::Query, http::StatusCode, response::IntoResponse, Json};
+use serde::{Deserialize, Serialize};
 use std::ffi::CString;
 use std::io;
 
@@ -18,8 +18,7 @@ struct StorageInfo {
 }
 
 fn get_fs_stats(path: &str) -> Result<StorageInfo, io::Error> {
-    let c_path = CString::new(path)
-        .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e))?;
+    let c_path = CString::new(path).map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e))?;
 
     unsafe {
         let mut stat: libc::statvfs = std::mem::zeroed();
@@ -64,7 +63,7 @@ pub async fn storage_info(Query(params): Query<StorageQuery>) -> axum::response:
             StatusCode::NOT_FOUND,
             Json(serde_json::json!({"status": "error", "message": "Path not found"})),
         )
-        .into_response();
+            .into_response();
     }
 
     match get_fs_stats(path) {
@@ -73,7 +72,7 @@ pub async fn storage_info(Query(params): Query<StorageQuery>) -> axum::response:
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(serde_json::json!({"status": "error", "message": e.to_string()})),
         )
-        .into_response(),
+            .into_response(),
     }
 }
 
