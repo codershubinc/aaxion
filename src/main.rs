@@ -4,6 +4,7 @@ use std::net::SocketAddr;
 use tokio::fs;
 
 const UPLOAD_DIR: &str = "/home/swap/aaxion/";
+const DB_PATH: &str = "/home/swap/aaxion/aaxion.db";
 const PORT: u16 = 18875; // Used for both TCP (Web) and UDP (Discovery)
 
 #[tokio::main]
@@ -11,6 +12,14 @@ async fn main() {
     // 1. Ensure upload dir exists...
     if fs::metadata(UPLOAD_DIR).await.is_err() {
         fs::create_dir_all(UPLOAD_DIR).await.unwrap();
+    }
+    // Ensure database file exists...
+    if fs::metadata(DB_PATH).await.is_err() {
+        println!(
+            "🆕 Database not found, creating new database at {}",
+            DB_PATH
+        );
+        fs::File::create(DB_PATH).await.unwrap();
     }
 
     // 2. Start Discovery on the SAME PORT

@@ -52,6 +52,8 @@ pub async fn list_files(Query(params): Query<ListFilesQuery>) -> Response {
                     raw_path: path.to_string_lossy().to_string(),
                 });
             }
+        } else {
+            println!("⚠️  Skipping invalid filename: {:?}", path);
         }
     }
 
@@ -70,7 +72,6 @@ pub async fn upload_file(mut multipart: Multipart) -> impl IntoResponse {
                 None => continue, // Skip if it's not a file
             };
 
-            // SECURITY FIX: Sanitize filename (prevent ../../ attacks)
             let safe_filename = Path::new(&file_name).file_name().unwrap().to_string_lossy();
             let file_path = PathBuf::from(UPLOAD_DIR).join(safe_filename.as_ref());
 
