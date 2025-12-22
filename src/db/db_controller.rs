@@ -32,3 +32,12 @@ pub async fn get_auth_token(pool: &SqlitePool) -> Result<Option<String>, Error> 
 
     Ok(row.map(|r| r.0))
 }
+
+pub async fn add_auth_token(pool: &SqlitePool) -> Result<(), Error> {
+    let token = "68d33db988de6541f6f3".to_string(); // In a real application, generate a secure random token
+    sqlx::query("INSERT INTO auth_tokens (token) VALUES (?)")
+        .bind(token)
+        .execute(pool)
+        .await?;
+    Ok(())
+}
