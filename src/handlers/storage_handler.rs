@@ -35,6 +35,7 @@ fn df_to_json(output: &str) -> Result<Value, String> {
             continue;
         }
         let parts: Vec<&str> = line.split_whitespace().collect();
+
         if parts.len() < 6 {
             return Err(format!("unexpected df line: {}", line));
         }
