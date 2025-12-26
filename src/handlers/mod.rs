@@ -11,5 +11,3 @@ pub use file_handler::upload_file;
 pub use file_handler::upload_raw;
 
 pub use storage_handler::storage_info;
-pub use storage_handler::storage_mounts;
-pub use storage_handler::storage_system;

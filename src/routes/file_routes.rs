@@ -16,6 +16,4 @@ pub fn routes() -> Router {
         .route("/delete", post(handlers::delete_item))
         .route("/download", get(handlers::download_file))
         .route("/storage", get(handlers::storage_info))
-        .route("/storage/mounts", get(handlers::storage_mounts))
-        .route("/storage/system", get(handlers::storage_system))
 }
