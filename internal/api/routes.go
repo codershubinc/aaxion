@@ -14,6 +14,10 @@ func RegisterRoutes() {
 	http.HandleFunc("/files/upload/chunk/complete", files.HandleCompleteUpload)
 	http.HandleFunc("/files/upload/chunk", files.HandleUploadChunk)
 
+	// temp files sharing
+	http.HandleFunc("/files/d/t/", files.FileTempShare)
+	http.HandleFunc("/files/d/r", files.RequestFileTempShare)
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "index.html")
 	})

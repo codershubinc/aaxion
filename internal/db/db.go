@@ -2,9 +2,10 @@ package db
 
 import (
 	"database/sql"
-	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"os"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var dbConn *sql.DB
@@ -38,4 +39,8 @@ func InitDb() error {
 		return err
 	}
 	return nil
+}
+
+func getDbConn() *sql.DB {
+	return dbConn
 }
