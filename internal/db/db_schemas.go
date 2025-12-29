@@ -1,0 +1,10 @@
+package db
+
+var tokensTableSchema = `
+CREATE TABLE IF NOT EXISTS tokens (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	token TEXT NOT NULL UNIQUE,
+	token_type TEXT NOT NULL,
+	created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+`
