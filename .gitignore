@@ -2,6 +2,7 @@
 *.iso
 uploads/
 /uploads
+/upload
 
 # Installer & Distribution Files
 setup/linux-installer/
