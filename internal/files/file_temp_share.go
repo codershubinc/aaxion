@@ -29,15 +29,12 @@ func FileTempShare(w http.ResponseWriter, r *http.Request) {
 
 	fileName := filepath.Base(filePath)
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
-
+	// remove the token from db ,  its used now
+	defer db.RevokeFileShareToken(token)
 	http.ServeFile(w, r, filePath)
 }
 
 func RequestFileTempShare(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 
 	filePath := r.URL.Query().Get("file_path")
 	if filePath == "" {
@@ -47,7 +44,7 @@ func RequestFileTempShare(w http.ResponseWriter, r *http.Request) {
 
 	token, err := db.CreateFileShareTempToken(filePath)
 	if err != nil {
-		http.Error(w, "Failed to create share token", http.StatusInternalServerError)
+		http.Error(w, "Failed to create share token"+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
