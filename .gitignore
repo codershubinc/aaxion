@@ -3,6 +3,8 @@
 uploads/
 /uploads
 /upload
+/uploads_temp
+index.html
 
 # Installer & Distribution Files
 setup/linux-installer/
