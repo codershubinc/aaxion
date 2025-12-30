@@ -196,6 +196,4 @@ curl -O "http://localhost:8080/files/d/t/abcdefghijklmnopqrstuvwxyzABCDEF"
 - Ensure filesystem permissions allow the server process to read/write the target locations.
 - For large uploads prefer the chunked flow; keep chunks <= 90MB.
 
----
-
-Want further tweaks? I can add a table of parameters, curl examples for each endpoint, or a quick OpenAPI spec export — tell me which you'd prefer. ✅
+--- 
