@@ -82,3 +82,26 @@ func GetSystemRootPath(w http.ResponseWriter, r *http.Request) {
 	rootPath := getRootPath()
 	helpers.SetJSONResponce(w, map[string]string{"root_path": rootPath})
 }
+
+func DownloadFileApi(w http.ResponseWriter, r *http.Request) {
+	filePath := r.URL.Query().Get("path")
+	if filePath == "" {
+		http.Error(w, "Missing 'path' query parameter", http.StatusBadRequest)
+		return
+	}
+	isSuspicious := expelDotPath(filePath)
+	if isSuspicious {
+		http.Error(w, "Suspicious path detected", http.StatusBadRequest)
+		return
+	}
+
+	path, err := FileDownloader(filePath)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Disposition", "attachment; filename="+path)
+	w.Header().Set("Content-Type", "application/octet-stream")
+	http.ServeFile(w, r, path)
+}

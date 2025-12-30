@@ -13,6 +13,7 @@ func RegisterRoutes() {
 	http.HandleFunc("/files/upload/chunk/start", files.HandleStartChunkUpload)
 	http.HandleFunc("/files/upload/chunk/complete", files.HandleCompleteUpload)
 	http.HandleFunc("/files/upload/chunk", files.HandleUploadChunk)
+	http.HandleFunc("/files/download", files.DownloadFileApi)
 
 	// temp files sharing
 	http.HandleFunc("/files/d/t/{token}", files.FileTempShare)

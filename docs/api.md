@@ -190,10 +190,28 @@ curl -O "http://localhost:8080/files/d/t/abcdefghijklmnopqrstuvwxyzABCDEF"
 
 ---
 
+### System Info
+
+Endpoint:
+
+```http
+GET /api/system/get-root-path
+```
+
+- Description: Retrieve the monitored root directory path.
+- Response: JSON object with `root_path` field.
+  Example response:
+
+```json
+{
+  "root_path": "/home/swap"
+}
+```
+
 ## Notes & best practices
 
 - All paths must be under the monitored root (e.g., `/home/swap/*`).
 - Ensure filesystem permissions allow the server process to read/write the target locations.
 - For large uploads prefer the chunked flow; keep chunks <= 90MB.
 
---- 
+---
