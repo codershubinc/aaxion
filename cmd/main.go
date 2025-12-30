@@ -20,5 +20,8 @@ func main() {
 func startServer() {
 	fmt.Println("Starting server...")
 	api.RegisterRoutes()
-	http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
 }

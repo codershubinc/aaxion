@@ -29,6 +29,7 @@ func FileTempShare(w http.ResponseWriter, r *http.Request) {
 
 	fileName := filepath.Base(filePath)
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
+
 	// remove the token from db ,  its used now
 	defer db.RevokeFileShareToken(token)
 	http.ServeFile(w, r, filePath)

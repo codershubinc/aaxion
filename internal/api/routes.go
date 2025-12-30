@@ -18,6 +18,7 @@ func RegisterRoutes() {
 	http.HandleFunc("/files/d/t/{token}", files.FileTempShare)
 	http.HandleFunc("/files/d/r", files.RequestFileTempShare)
 
+	// this is temp route to serve index.html for testing
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "index.html")
 	})

@@ -16,6 +16,10 @@ const (
 )
 
 func HandleStartChunkUpload(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
 	filename := r.URL.Query().Get("filename")
 	if filename == "" {
 		http.Error(w, "Invalid filename", http.StatusBadRequest)
@@ -34,6 +38,10 @@ func HandleStartChunkUpload(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUploadChunk(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
 	// Parse query params: ?filename=video.mp4&chunk_index=0
 	filename := r.URL.Query().Get("filename")
 	indexStr := r.URL.Query().Get("chunk_index")
@@ -69,6 +77,10 @@ func HandleUploadChunk(w http.ResponseWriter, r *http.Request) {
 
 // 3. COMPLETE: Merge all chunks
 func HandleCompleteUpload(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
 	filename := r.URL.Query().Get("filename")
 	uploadDir := r.URL.Query().Get("dir")
 	if filename == "" || uploadDir == "" {
