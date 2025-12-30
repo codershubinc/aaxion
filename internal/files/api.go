@@ -11,13 +11,13 @@ func ViewContent(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Missing 'dir' query parameter", http.StatusBadRequest)
 		return
 	}
+	if dir == "/" {
+		dir = getRootPath()
+	}
 	isSuspicious := expelDotPath(dir)
 	if isSuspicious {
 		http.Error(w, "Suspicious path detected", http.StatusBadRequest)
 		return
-	}
-	if dir == "/" {
-		dir = getRootPath()
 	}
 
 	files, err := viewContent(dir)
