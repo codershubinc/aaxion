@@ -17,7 +17,7 @@
 
 ## 📥 Installation
 
-1.  **Download:** Check the [latest release](https://github.com/your-repo/releases) and get the binary for your OS.
+1.  **Download:** Check the [latest release](https://github.com/codershubinc/aaxion/releases) and get the binary for your OS.
 2.  **Permissions:**
     - **Linux:** `chmod +x aaxion-linux-amd64`
     - **Windows:** No action needed for `aaxion-windows-amd64.exe`

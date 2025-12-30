@@ -7,7 +7,7 @@ import (
 
 func RegisterRoutes() {
 
-	http.HandleFunc("/files/view", files.ViewContent)
+	http.HandleFunc("/api/files/view", files.ViewContent)
 	http.HandleFunc("/files/create-directory", files.CreateDirectory)
 	http.HandleFunc("/files/upload", files.UploadFile)
 	http.HandleFunc("/files/upload/chunk/start", files.HandleStartChunkUpload)
