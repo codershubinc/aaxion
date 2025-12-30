@@ -26,7 +26,11 @@ Base URL (local): `http://localhost:8080/`
 
 ### 📁 View Files and Folders
 
+Endpoint:
+
+```http
 GET /files/view?dir={directory_path}
+```
 
 - Description: Return the contents of a directory.
 - Parameters:
@@ -52,7 +56,11 @@ GET /files/view?dir={directory_path}
 
 ### ✨ Create Directory
 
+Endpoint:
+
+```http
 POST /files/create-directory?path={directory_path}
+```
 
 - Description: Create a new directory at the specified path.
 - Parameters:
@@ -69,7 +77,11 @@ curl -X POST "http://localhost:8080/files/create-directory?path=/home/swap/new_f
 
 ### 📤 Upload File (single request)
 
+Endpoint:
+
+```http
 POST /files/upload?dir={directory_path}
+```
 
 - Description: Upload a file via multipart form-data.
 - Parameters:
@@ -89,7 +101,11 @@ curl -F "file=@/tmp/example.txt" "http://localhost:8080/files/upload?dir=/home/s
 
 1. Start session
 
+Endpoint:
+
+```http
 POST /files/upload/chunk/start?filename={filename}
+```
 
 - Description: Initialize a chunked upload session.
 - Query: `filename` (required).
@@ -103,7 +119,11 @@ curl -X POST "http://localhost:8080/files/upload/chunk/start?filename=largeFile.
 
 2. Upload chunk
 
+Endpoint:
+
+```http
 POST /files/upload/chunk?filename={filename}&chunk_index={index}
+```
 
 - Description: Upload a single chunk. Body is raw binary (NOT multipart/form-data).
 - Query:
@@ -119,7 +139,11 @@ curl --data-binary @chunk0.bin "http://localhost:8080/files/upload/chunk?filenam
 
 3. Complete upload
 
+Endpoint:
+
+```http
 POST /files/upload/chunk/complete?filename={filename}&dir={directory_path}
+```
 
 - Description: Merge uploaded chunks into the final file and save to `dir`.
 - Query: `filename`, `dir` (required).
@@ -137,7 +161,11 @@ curl -X POST "http://localhost:8080/files/upload/chunk/complete?filename=largeFi
 
 Request a temporary link (server returns a token / short URL):
 
+Endpoint:
+
+```http
 GET /files/d/r?file_path={file_path}
+```
 
 - Description: Generate a one-time temporary link for a file.
 - Query: `file_path` (required).
@@ -145,7 +173,11 @@ GET /files/d/r?file_path={file_path}
 
 Use the token URL to download:
 
+Endpoint:
+
+```http
 GET /files/d/t/{token}
+```
 
 - Description: Download the file referenced by the one-time token.
 - Note: Tokens are valid for one use only.
