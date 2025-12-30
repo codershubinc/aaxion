@@ -22,3 +22,5 @@ this is just a project to utilize my old laptops storage (1Tb) as the my main la
 - it lists the files/folders from root `(excluding the hidden files starting with .)`
 - for api calls it uses the port `8080` by default.
 - check api docs [here](./docs/api.md)
+
+#
