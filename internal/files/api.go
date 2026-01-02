@@ -14,7 +14,7 @@ func ViewContent(w http.ResponseWriter, r *http.Request) {
 	if dir == "/" {
 		dir = getRootPath()
 	}
-	isSuspicious := expelDotPath(dir)
+	isSuspicious := ExpelDotPath(dir)
 	if isSuspicious {
 		http.Error(w, "Suspicious path detected", http.StatusBadRequest)
 		return
@@ -39,7 +39,7 @@ func CreateDirectory(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Missing 'path' query parameter", http.StatusBadRequest)
 		return
 	}
-	isSuspicious := expelDotPath(path)
+	isSuspicious := ExpelDotPath(path)
 	if isSuspicious {
 		http.Error(w, "Suspicious path detected", http.StatusBadRequest)
 		return
@@ -63,7 +63,7 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Missing 'target_dir' query parameter", http.StatusBadRequest)
 		return
 	}
-	isSuspicious := expelDotPath(targetDir)
+	isSuspicious := ExpelDotPath(targetDir)
 	if isSuspicious {
 		http.Error(w, "Suspicious path detected", http.StatusBadRequest)
 		return
@@ -84,7 +84,7 @@ func DownloadFileApi(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Missing 'path' query parameter", http.StatusBadRequest)
 		return
 	}
-	isSuspicious := expelDotPath(filePath)
+	isSuspicious := ExpelDotPath(filePath)
 	if isSuspicious {
 		http.Error(w, "Suspicious path detected", http.StatusBadRequest)
 		return

@@ -20,7 +20,7 @@ func getRootPath() string {
 	return filepath.Join(string(homeDir))
 }
 
-func expelDotPath(path string) (isSuspicious bool) {
+func ExpelDotPath(path string) (isSuspicious bool) {
 
 	if !strings.HasPrefix(path, getRootPath()) {
 		return true
