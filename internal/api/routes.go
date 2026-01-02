@@ -2,6 +2,7 @@ package api
 
 import (
 	"aaxion/internal/files"
+	"aaxion/internal/system"
 	"net/http"
 )
 
@@ -20,7 +21,8 @@ func RegisterRoutes() {
 	http.HandleFunc("/files/d/r", files.RequestFileTempShare)
 
 	// system info
-	http.HandleFunc("/api/system/get-root-path", files.GetSystemRootPath)
+	http.HandleFunc("/api/system/get-root-path", system.GetSystemRootPath)
+	http.HandleFunc("/api/system/storage", system.GetSystemStorage)
 
 	// this is temp route to serve index.html for testing
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

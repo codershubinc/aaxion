@@ -78,11 +78,6 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func GetSystemRootPath(w http.ResponseWriter, r *http.Request) {
-	rootPath := getRootPath()
-	helpers.SetJSONResponce(w, map[string]string{"root_path": rootPath})
-}
-
 func DownloadFileApi(w http.ResponseWriter, r *http.Request) {
 	filePath := r.URL.Query().Get("path")
 	if filePath == "" {
