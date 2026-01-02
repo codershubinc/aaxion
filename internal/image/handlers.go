@@ -2,12 +2,16 @@ package image
 
 import (
 	"aaxion/internal/files"
+	"crypto/md5"
+	"encoding/hex"
 	"image"
 	"image/gif"
 	"image/jpeg"
 	"image/png"
+	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 // Ensure formats are registered
@@ -27,9 +31,30 @@ func ServeThumbnail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if file exists
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+	// Check if file exists and get info
+	info, err := os.Stat(filePath)
+	if os.IsNotExist(err) {
 		http.Error(w, "File not found", http.StatusNotFound)
+		return
+	}
+
+	// Cache logic
+	cacheDir := filepath.Join("uploads_temp", "thumbnails")
+	if err := os.MkdirAll(cacheDir, 0755); err != nil {
+		http.Error(w, "Failed to create cache directory", http.StatusInternalServerError)
+		return
+	}
+
+	// Generate hash based on file path and modification time
+	hash := md5.Sum([]byte(filePath + info.ModTime().String()))
+	cacheFilename := hex.EncodeToString(hash[:]) + ".jpg"
+	cachePath := filepath.Join(cacheDir, cacheFilename)
+
+	// Serve from cache if exists
+	if _, err := os.Stat(cachePath); err == nil {
+		log.Println("Served from  cache")
+		w.Header().Set("Cache-Control", "public, max-age=604800") // Cache for 7 days
+		http.ServeFile(w, r, cachePath)
 		return
 	}
 
@@ -71,14 +96,23 @@ func ServeThumbnail(w http.ResponseWriter, r *http.Request) {
 		thumb = img
 	}
 
-	// Encode and serve as JPEG
-	w.Header().Set("Content-Type", "image/jpeg")
-	w.Header().Set("Cache-Control", "public, max-age=86400") // Cache for 1 day
+	// Save to cache
+	outFile, err := os.Create(cachePath)
+	if err != nil {
+		http.Error(w, "Failed to create cache file", http.StatusInternalServerError)
+		return
+	}
 
-	err = jpeg.Encode(w, thumb, &jpeg.Options{Quality: 75})
+	err = jpeg.Encode(outFile, thumb, &jpeg.Options{Quality: 75})
+	outFile.Close()
+
 	if err != nil {
 		http.Error(w, "Failed to encode thumbnail", http.StatusInternalServerError)
+		return
 	}
+
+	w.Header().Set("Cache-Control", "public, max-age=604800") // Cache for 7 days
+	http.ServeFile(w, r, cachePath)
 }
 
 // resizeNearest implements a simple nearest-neighbor resizing

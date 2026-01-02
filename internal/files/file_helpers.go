@@ -22,7 +22,23 @@ func getRootPath() string {
 
 func ExpelDotPath(path string) (isSuspicious bool) {
 
-	if !strings.HasPrefix(path, getRootPath()) {
+	isAllowed := false
+	if strings.HasPrefix(path, getRootPath()) {
+		isAllowed = true
+	}
+
+	// Allow external storage mount points
+	if !isAllowed {
+		externalPrefixes := []string{"/media/", "/mnt/", "/run/media/"}
+		for _, prefix := range externalPrefixes {
+			if strings.HasPrefix(path, prefix) {
+				isAllowed = true
+				break
+			}
+		}
+	}
+
+	if !isAllowed {
 		return true
 	}
 
