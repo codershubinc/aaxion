@@ -4,7 +4,7 @@ import "crypto/rand"
 
 func createToken() (token string, err error) {
 
-	chars := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()-_=+[{]}\\|;:'\",<.>/?"
+	chars := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_~"
 	tokenBytes := make([]byte, 32)
 	randNum := make([]byte, 32)
 	_, err = rand.Read(randNum)
