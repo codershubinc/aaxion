@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"syscall"
 )
@@ -13,6 +14,7 @@ import (
 func GetSystemStorage(w http.ResponseWriter, r *http.Request) {
 	// Get root filesystem storage info
 	var stat syscall.Statfs_t
+
 	rootPath := getRootPath()
 
 	err := syscall.Statfs(rootPath, &stat)
@@ -130,10 +132,5 @@ func getExternalStorageDevices() ([]map[string]interface{}, error) {
 }
 
 func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(slice, item)
 }
