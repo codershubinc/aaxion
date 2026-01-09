@@ -9,12 +9,18 @@ import (
 
 func RegisterRoutes() {
 
+	// file management operations
 	http.HandleFunc("/api/files/view", files.ViewContent)
 	http.HandleFunc("/files/create-directory", files.CreateDirectory)
+
+	// file upload  operations
 	http.HandleFunc("/files/upload", files.UploadFile)
+	// file upload  operations - chunked
 	http.HandleFunc("/files/upload/chunk/start", files.HandleStartChunkUpload)
 	http.HandleFunc("/files/upload/chunk/complete", files.HandleCompleteUpload)
 	http.HandleFunc("/files/upload/chunk", files.HandleUploadChunk)
+
+	// file download operations
 	http.HandleFunc("/files/download", files.DownloadFileApi)
 	http.HandleFunc("/files/thumbnail", img.ServeThumbnail)
 
