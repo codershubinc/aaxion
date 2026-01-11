@@ -33,20 +33,26 @@ func startServer() {
 }
 
 func corsMiddleware(next http.Handler) http.Handler {
-	// Get local IP once
-	localIP := GetOutboundIP()
-	localIPStr := localIP.String()
-	fmt.Printf("Allowing CORS for Local IP: %s\n", localIPStr)
+	// Get all local IPs
+	localIPs, err := GetAllLocalIPs()
+	if err != nil {
+		fmt.Printf("Error getting local IPs: %v\n", err)
+	}
+	// Add common localhost variants
+	localIPs = append(localIPs, "localhost", "127.0.0.1")
+
+	fmt.Printf("Allowing CORS for IPs: %v\n", localIPs)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 
-		// Allow requests from localhost and the dynamic local IP
+		// Allow requests from any local IP
 		if origin != "" {
-			if strings.Contains(origin, "localhost") ||
-				strings.Contains(origin, "127.0.0.1") ||
-				strings.Contains(origin, localIPStr) {
-				w.Header().Set("Access-Control-Allow-Origin", origin)
+			for _, ip := range localIPs {
+				if strings.Contains(origin, ip) {
+					w.Header().Set("Access-Control-Allow-Origin", origin)
+					break
+				}
 			}
 		}
 
@@ -62,14 +68,33 @@ func corsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func GetOutboundIP() net.IP {
-	conn, err := net.Dial("udp", "8.8.8.8:80")
+func GetAllLocalIPs() ([]string, error) {
+	var ips []string
+	ifaces, err := net.Interfaces()
 	if err != nil {
-		return net.IPv4(127, 0, 0, 1)
+		return nil, err
 	}
-	defer conn.Close()
-
-	localAddr := conn.LocalAddr().(*net.UDPAddr)
-
-	return localAddr.IP
+	for _, i := range ifaces {
+		addrs, err := i.Addrs()
+		if err != nil {
+			continue
+		}
+		for _, addr := range addrs {
+			var ip net.IP
+			switch v := addr.(type) {
+			case *net.IPNet:
+				ip = v.IP
+			case *net.IPAddr:
+				ip = v.IP
+			}
+			// Only keep IPv4 usually, or IPv6 if needed.
+			// Let's keep both non-loopback IPs or just check validity.
+			// Actually user wants "wifi ip, lan ip", usually IPv4 is what matters most for local dev,
+			// but collecting valid IPs is safe.
+			if ip != nil && !ip.IsLoopback() {
+				ips = append(ips, ip.String())
+			}
+		}
+	}
+	return ips, nil
 }
