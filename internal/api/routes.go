@@ -15,6 +15,7 @@ func RegisterRoutes() {
 
 	// file upload  operations
 	http.HandleFunc("/files/upload", files.UploadFile)
+
 	// file upload  operations - chunked
 	http.HandleFunc("/files/upload/chunk/start", files.HandleStartChunkUpload)
 	http.HandleFunc("/files/upload/chunk/complete", files.HandleCompleteUpload)
