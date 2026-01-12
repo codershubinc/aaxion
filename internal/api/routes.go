@@ -24,6 +24,7 @@ func RegisterRoutes() {
 	// file download operations
 	http.HandleFunc("/files/download", files.DownloadFileApi)
 	http.HandleFunc("/files/thumbnail", img.ServeThumbnail)
+	http.HandleFunc("/files/view-image", img.ViewImage)
 
 	// temp files sharing
 	http.HandleFunc("/files/d/t/{token}", files.FileTempShare)

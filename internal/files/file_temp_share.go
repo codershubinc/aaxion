@@ -2,6 +2,7 @@ package files
 
 import (
 	"aaxion/internal/db"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -50,5 +51,12 @@ func RequestFileTempShare(w http.ResponseWriter, r *http.Request) {
 	}
 
 	shareLink := fmt.Sprintf("/files/d/t/%s", token)
-	w.Write([]byte(shareLink))
+
+	resp := map[string]string{
+		"share_link": shareLink,
+		"token":      token,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
 }

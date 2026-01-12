@@ -87,10 +87,6 @@ func GetAllLocalIPs() ([]string, error) {
 			case *net.IPAddr:
 				ip = v.IP
 			}
-			// Only keep IPv4 usually, or IPv6 if needed.
-			// Let's keep both non-loopback IPs or just check validity.
-			// Actually user wants "wifi ip, lan ip", usually IPv4 is what matters most for local dev,
-			// but collecting valid IPs is safe.
 			if ip != nil && !ip.IsLoopback() {
 				ips = append(ips, ip.String())
 			}

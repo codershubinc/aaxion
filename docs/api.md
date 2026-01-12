@@ -169,7 +169,15 @@ GET /files/d/r?file_path={file_path}
 
 - Description: Generate a one-time temporary link for a file.
 - Query: `file_path` (required).
-- Example response: `/files/d/t/abcdefghijklmnopqrstuvwxyzABCDEF`
+- Response: JSON object containing the share link and token.
+- Example response:
+
+  ```json
+  {
+    "share_link": "/files/d/t/abcdefghijklmnopqrstuvwxyzABCDEF",
+    "token": "abcdefghijklmnopqrstuvwxyzABCDEF"
+  }
+  ```
 
 Use the token URL to download:
 
@@ -186,6 +194,48 @@ Example:
 
 ```bash
 curl -O "http://localhost:8080/files/d/t/abcdefghijklmnopqrstuvwxyzABCDEF"
+```
+
+---
+
+### 🖼️ Images & Thumbnails
+
+#### View Full Image
+
+Endpoint:
+
+```http
+GET /files/view-image?path={file_path}
+```
+
+- Description: Serve the raw image file directly.
+- Features:
+  - Supports client-side caching (7 days).
+  - Handles correct content-type automatically.
+- Query: `path` (string, required).
+
+Example:
+
+```bash
+curl "http://localhost:8080/files/view-image?path=/home/swap/photos/vacation.jpg"
+```
+
+#### Get Thumbnail
+
+Endpoint:
+
+```http
+GET /files/thumbnail?path={file_path}
+```
+
+- Description: Get a resized (max 200px) JPEG thumbnail of an image.
+- Features: Server-side caching of generated thumbnails.
+- Query: `path` (string, required).
+
+Example:
+
+```bash
+curl "http://localhost:8080/files/thumbnail?path=/home/swap/photos/vacation.jpg"
 ```
 
 ---
