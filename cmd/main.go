@@ -40,6 +40,7 @@ func corsMiddleware(next http.Handler) http.Handler {
 	}
 	// Add common localhost variants
 	localIPs = append(localIPs, "localhost", "127.0.0.1")
+	localIPs = append(localIPs, "aaxion-cdn.codershubinc.tech")
 
 	fmt.Printf("Allowing CORS for IPs: %v\n", localIPs)
 
