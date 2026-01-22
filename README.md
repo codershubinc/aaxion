@@ -9,7 +9,7 @@
 ## 🚀 Key Features
 
 - **Zero-Buffer Streaming:** Uploads and downloads are streamed directly to disk/network. A 10GB file transfer uses only ~32KB of RAM.
-- **Resumable Uploads:** Supports chunked uploading to bypass network limits (e.g., Cloudflare Tunnel) and resume interrupted transfers.
+- **Chunked Uploads:** Supports chunked uploading to bypass network limits (e.g., Cloudflare Tunnel).
 - **Temporary Sharing:** Generate one-time secure links for external file sharing.
 - **Cross-Platform:** Written in Go, runs on Linux (primary) and Windows.
 
