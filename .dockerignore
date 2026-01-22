@@ -1,0 +1,39 @@
+# Git files
+.git
+.gitignore
+
+# Documentation
+README.md
+docs/
+learn.md
+
+# Database
+.aaxion.db
+
+# Build artifacts
+aaxion
+*.exe
+target/
+
+# Uploads and temporary files
+uploads/
+upload/
+uploads_temp/
+temp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test files
+*.test
+
+# Distribution files
+setup/
+*.iso

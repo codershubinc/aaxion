@@ -17,6 +17,8 @@
 
 ## 📥 Installation
 
+### Option 1: Binary Installation
+
 1.  **Download:** Check the [latest release](https://github.com/codershubinc/aaxion/releases) and get the binary for your OS.
 2.  **Permissions:**
     - **Linux:** `chmod +x aaxion-linux-amd64`
@@ -28,6 +30,49 @@
     ./aaxion-windows-amd64.exe
     ```
 4.  **Enjoy:** The server starts on port `8080` by default.
+
+### Option 2: Docker Installation 🐳
+
+Run Aaxion in a container for easy deployment and isolation:
+
+#### Quick Start with Docker
+
+```bash
+# Build the image
+docker build -t aaxion:latest .
+
+# Run the container
+docker run -d \
+  -p 8080:8080 \
+  -v $(pwd)/data/uploads:/data/uploads \
+  -v $(pwd)/data/db:/data \
+  --name aaxion-server \
+  aaxion:latest
+```
+
+#### Using Docker Compose (Recommended)
+
+1. **Start the service:**
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **View logs:**
+   ```bash
+   docker-compose logs -f
+   ```
+
+3. **Stop the service:**
+   ```bash
+   docker-compose down
+   ```
+
+**Docker Features:**
+- Persistent storage via volumes
+- Automatic restarts
+- Health checks
+- Runs as non-root user for security
+- Minimal Alpine Linux base (~20MB image)
 
 ---
 

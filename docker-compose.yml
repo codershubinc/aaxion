@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  aaxion:
+    build: .
+    container_name: aaxion-server
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount a directory for persistent file storage
+      - ./data/uploads:/data/uploads
+      # Mount a directory for the database
+      - ./data/db:/data
+    environment:
+      - AAXION_DB_PATH=/data/.aaxion.db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
