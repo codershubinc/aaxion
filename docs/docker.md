@@ -217,6 +217,6 @@ volumes:
 ## Support
 
 For issues or questions:
-- Check the [main README](./README.md)
-- Review the [API documentation](./docs/api.md)
+- Check the [main README](../README.md)
+- Review the [API documentation](./api.md)
 - Open an issue on GitHub

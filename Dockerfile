@@ -4,8 +4,8 @@ FROM golang:1.23-alpine AS builder
 # Install build dependencies for CGO (required for go-sqlite3)
 # Using apk cache and trying different mirrors if needed
 RUN apk add --no-cache gcc musl-dev sqlite-dev || \
-    (echo "http://dl-4.alpinelinux.org/alpine/v3.22/main" > /etc/apk/repositories && \
-     echo "http://dl-4.alpinelinux.org/alpine/v3.22/community" >> /etc/apk/repositories && \
+    (echo "http://dl-4.alpinelinux.org/alpine/v3.18/main" > /etc/apk/repositories && \
+     echo "http://dl-4.alpinelinux.org/alpine/v3.18/community" >> /etc/apk/repositories && \
      apk add --no-cache gcc musl-dev sqlite-dev)
 
 # Set working directory
