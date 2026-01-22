@@ -17,10 +17,10 @@ Build and run the container:
 # Build the image
 docker build -t aaxion:latest .
 
-# Run the container
+# Run the container with your file storage directory
 docker run -d \
   -p 8080:8080 \
-  -v $(pwd)/data/uploads:/data/uploads \
+  -v $(pwd)/data:/home/aaxion \
   -v $(pwd)/data/db:/data \
   --name aaxion-server \
   aaxion:latest
@@ -31,6 +31,10 @@ docker run -d \
 The easiest way to run Aaxion is with Docker Compose:
 
 ```bash
+# Create data directory with proper permissions
+mkdir -p data data/db
+chmod 755 data data/db
+
 # Start the service
 docker-compose up -d
 
@@ -43,12 +47,48 @@ docker-compose down
 
 ## Configuration
 
-### Volumes
+### Volumes and Permissions
+
+**Important:** Aaxion operates on files in its home directory. The application runs as user `aaxion` (UID 1000, GID 1000).
 
 The docker-compose.yml configures two volumes:
 
-- `./data/uploads:/data/uploads` - Stores uploaded files
-- `./data/db:/data` - Stores the SQLite database
+- `./data:/home/aaxion` - Main file storage (where Aaxion will read/write files)
+- `./data/db:/data` - SQLite database storage
+
+**To use your own directory** (e.g., `/home/yourusername/storage`):
+
+1. **Option 1: Mount with proper permissions**
+   ```yaml
+   volumes:
+     - /home/yourusername/storage:/home/aaxion
+   ```
+   Then ensure the directory is readable/writable:
+   ```bash
+   chmod -R 755 /home/yourusername/storage
+   # Or if you need the container user to own it:
+   chown -R 1000:1000 /home/yourusername/storage
+   ```
+
+2. **Option 2: Run container as your user** (avoids permission issues)
+   Add to docker-compose.yml:
+   ```yaml
+   user: "$(id -u):$(id -g)"
+   ```
+   Or in docker run:
+   ```bash
+   docker run -d \
+     -p 8080:8080 \
+     -v /home/yourusername/storage:/home/aaxion \
+     --user $(id -u):$(id -g) \
+     aaxion:latest
+   ```
+
+3. **Option 3: Run as root** (least secure, but works for all directories)
+   Add to docker-compose.yml:
+   ```yaml
+   user: "0:0"
+   ```
 
 You can modify these paths in `docker-compose.yml` to use different locations on your host system.
 

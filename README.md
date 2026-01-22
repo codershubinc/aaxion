@@ -41,10 +41,13 @@ Run Aaxion in a container for easy deployment and isolation:
 # Build the image
 docker build -t aaxion:latest .
 
-# Run the container
+# Create data directory
+mkdir -p data data/db
+
+# Run the container (mounting your storage directory)
 docker run -d \
   -p 8080:8080 \
-  -v $(pwd)/data/uploads:/data/uploads \
+  -v $(pwd)/data:/home/aaxion \
   -v $(pwd)/data/db:/data \
   --name aaxion-server \
   aaxion:latest
@@ -52,17 +55,23 @@ docker run -d \
 
 #### Using Docker Compose (Recommended)
 
-1. **Start the service:**
+1. **Prepare directories:**
+   ```bash
+   mkdir -p data data/db
+   chmod 755 data data/db
+   ```
+
+2. **Start the service:**
    ```bash
    docker-compose up -d
    ```
 
-2. **View logs:**
+3. **View logs:**
    ```bash
    docker-compose logs -f
    ```
 
-3. **Stop the service:**
+4. **Stop the service:**
    ```bash
    docker-compose down
    ```
@@ -73,6 +82,8 @@ docker run -d \
 - Health checks
 - Runs as non-root user for security
 - Minimal Alpine Linux base (~20MB image)
+
+**Note:** The container runs as user `aaxion` (UID 1000). For accessing host directories, ensure proper permissions or run with your user ID. See the [Docker Deployment Guide](./docs/docker.md) for details.
 
 For more details, see the [Docker Deployment Guide](./docs/docker.md).
 

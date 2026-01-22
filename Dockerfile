@@ -42,9 +42,10 @@ WORKDIR /app
 # Copy the binary from builder
 COPY --from=builder /app/aaxion .
 
-# Create directories for uploads and data
-RUN mkdir -p /data/uploads && \
-    chown -R aaxion:aaxion /app /data
+# Create directories for data storage
+# These directories will be used for file operations
+RUN mkdir -p /data /home/aaxion && \
+    chown -R aaxion:aaxion /app /data /home/aaxion
 
 # Switch to non-root user
 USER aaxion
