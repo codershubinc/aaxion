@@ -19,3 +19,6 @@ aaxion
 
 # Docker data volumes
 data/
+
+# Environment files
+.env

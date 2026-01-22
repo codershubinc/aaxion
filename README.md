@@ -74,6 +74,8 @@ docker run -d \
 - Runs as non-root user for security
 - Minimal Alpine Linux base (~20MB image)
 
+For more details, see the [Docker Deployment Guide](./docs/docker.md).
+
 ---
 
 ## ⚙️ How it Works
