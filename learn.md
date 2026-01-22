@@ -134,13 +134,49 @@ See [API Documentation](./docs/api.md) for detailed examples.
 
 By default, Aaxion monitors a specific directory. You can configure this when starting the server or through environment variables (check the source code for specific configuration options).
 
+**Example configurations:**
+```bash
+# Set via environment variable (if supported)
+export AAXION_ROOT_PATH=/home/swap
+./aaxion-linux-amd64
+
+# Or check the command-line flags
+./aaxion-linux-amd64 --help
+```
+
 ### Running as a Service (Linux)
 
 For persistent operation, set up Aaxion as a systemd service:
 
-1. Create a service file at `/etc/systemd/system/aaxion.service`
-2. Enable and start the service
-3. Aaxion will run in the background and start automatically on boot
+1. Create a service file at `/etc/systemd/system/aaxion.service`:
+
+```ini
+[Unit]
+Description=Aaxion File Server
+After=network.target
+
+[Service]
+Type=simple
+User=your-username
+WorkingDirectory=/path/to/aaxion
+ExecStart=/path/to/aaxion/aaxion-linux-amd64
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+2. Enable and start the service:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable aaxion
+sudo systemctl start aaxion
+sudo systemctl status aaxion
+```
+
+3. Aaxion will now run in the background and start automatically on boot
 
 ---
 
@@ -214,7 +250,7 @@ http://localhost:8080/files/d/t/TOKEN
 1. **Path Validation:** Aaxion automatically prevents directory traversal attacks
 2. **Hidden Files:** Files starting with `.` are automatically excluded
 3. **Root Restriction:** All operations are confined to the monitored root directory
-4. **Network Security:** Consider using a reverse proxy (nginx/Apache) for HTTPS
+4. **Network Security:** Consider using a reverse proxy (Nginx/Apache) for HTTPS
 5. **Firewall:** Configure firewall rules to restrict access to trusted networks
 
 ---
