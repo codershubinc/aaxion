@@ -13,6 +13,7 @@ func RegisterRoutes() {
 	// Auth routes
 	http.HandleFunc("/auth/register", auth.Register)
 	http.HandleFunc("/auth/login", auth.Login)
+	http.HandleFunc("/auth/logout", auth.Logout)
 
 	// file management operations
 	http.HandleFunc("/api/files/view", auth.AuthMiddleware(files.ViewContent))

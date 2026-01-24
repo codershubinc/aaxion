@@ -69,6 +69,11 @@ func VerifyToken(token string) (bool, error) {
 	return true, nil
 }
 
+func InvalidateToken(token string) error {
+	_, err := dbConn.Exec("DELETE FROM auth_tokens WHERE token = ?", token)
+	return err
+}
+
 func HasUsers() (bool, error) {
 	var count int
 	err := dbConn.QueryRow("SELECT COUNT(*) FROM users").Scan(&count)

@@ -71,3 +71,33 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(AuthResponse{Token: token})
 }
+
+func Logout(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Simple check, middleware handles strict validation usually,
+	// but here we just want to remove what is sent.
+	// Format: "Bearer <token>"
+	if len(authHeader) < 7 || authHeader[:7] != "Bearer " {
+		http.Error(w, "Invalid auth header", http.StatusBadRequest)
+		return
+	}
+	token := authHeader[7:]
+
+	if err := db.InvalidateToken(token); err != nil {
+		http.Error(w, "Server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"message": "Logged out successfully"}`))
+}

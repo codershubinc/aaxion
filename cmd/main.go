@@ -3,6 +3,7 @@ package main
 import (
 	"aaxion/internal/api"
 	"aaxion/internal/db"
+	"aaxion/internal/discovery"
 	"fmt"
 	"log"
 	"net"
@@ -20,13 +21,18 @@ func main() {
 }
 
 func startServer() {
+	port := 8080
 	fmt.Println("Starting server...")
 	api.RegisterRoutes()
+
+	// Start mDNS discovery service
+	discovery.StartDiscoveryService(port)
 
 	// Wrap the default mux with CORS middleware
 	handler := corsMiddleware(http.DefaultServeMux)
 
-	err := http.ListenAndServe(":8080", handler)
+	log.Printf("Listening on :%d", port)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", port), handler)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
