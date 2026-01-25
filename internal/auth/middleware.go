@@ -9,6 +9,11 @@ import (
 func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
+		authQuery := r.URL.Query().Get("tkn")
+		if (authQuery != "") && strings.Contains(r.URL.String(), "/files/thumbnail") {
+			authHeader = "Bearer " + authQuery
+		}
+
 		if authHeader == "" {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return

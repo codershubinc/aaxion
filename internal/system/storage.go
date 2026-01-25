@@ -66,7 +66,6 @@ func getExternalStorageDevices() ([]map[string]interface{}, error) {
 	var devices []map[string]interface{}
 	scanner := bufio.NewScanner(file)
 
-	// Common mount points for external storage
 	externalPrefixes := []string{"/media/", "/mnt/", "/run/media/"}
 
 	for scanner.Scan() {
@@ -81,7 +80,6 @@ func getExternalStorageDevices() ([]map[string]interface{}, error) {
 		mountPoint := fields[1]
 		fsType := fields[2]
 
-		// Skip system/virtual filesystems
 		skipTypes := []string{"tmpfs", "devtmpfs", "sysfs", "proc", "devpts", "cgroup", "cgroup2", "pstore", "bpf", "configfs", "selinuxfs", "debugfs", "tracefs", "fusectl", "fuse.gvfsd-fuse", "fuse.portal", "securityfs", "hugetlbfs", "mqueue", "autofs"}
 		if contains(skipTypes, fsType) {
 			continue
