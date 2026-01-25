@@ -12,6 +12,7 @@ setup/linux-installer/
 # OS Generated Files
 .DS_Store
 Thumbs.db
+.aaxion.db
 
 temp
 
