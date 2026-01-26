@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  aaxion:
+    build: .
+    container_name: aaxion-server
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount your file storage directory to the container's home directory
+      # The application operates on /home/aaxion by default
+      # Replace ./data with your actual storage path (e.g., /home/swap)
+      - ./data:/home/aaxion
+      # Mount for the database
+      - ./data/db:/data
+    environment:
+      - AAXION_DB_PATH=/data/.aaxion.db
+    # Run with host user mapping to avoid permission issues
+    # Uncomment and adjust if you need to match your host user ID
+    # user: "1000:1000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 8080 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
