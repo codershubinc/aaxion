@@ -74,3 +74,11 @@ Even while uploading a **10GB file**, the resource usage remains flat because da
 - **Disk:** ~1 MB (Log storage)
 
 ![under load](./docs/assets/under_load.png)
+
+## License
+
+Aaxion is free software licensed under the [GNU Affero General Public License v3.0](LICENSE).
+Copyright (C) 2026 Swapnil Ingle.
+
+> **Note:** If you deploy this server and allow others to use it, you must provide them with access to the source code (including your modifications).
+> 
