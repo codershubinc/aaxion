@@ -6,23 +6,87 @@ Base URL (local): `http://localhost:8080/`
 
 ---
 
+## 🔐 Authentication
+
+Most endpoints require authentication. You must obtain a token and include it in the `Authorization` header.
+
+**Header format:**
+`Authorization: Bearer <your_token>`
+
+**Special Case:**
+
+- `/files/thumbnail`: Supports passing the token via query parameter `?tkn=<token>` to allow loading images in `<img>` tags.
+
+---
+
 ## Quick examples
 
-- View files (curl):
+- Login:
 
   ```bash
-  curl "http://localhost:8080/files/view?dir=/home/swap/documents"
+  curl -X POST -d '{"username":"your_user","password":"your_pass"}' "http://localhost:8080/auth/login"
+  ```
+
+- Logout:
+
+  ```bash
+  curl -H "Authorization: Bearer $TOKEN" -X POST "http://localhost:8080/auth/logout"
+  ```
+
+- View files:
+
+  ```bash
+  curl -H "Authorization: Bearer $TOKEN" "http://localhost:8080/files/view?dir=/home/swap/documents"
   ```
 
 - Upload (single file):
 
   ```bash
-  curl -F "file=@/path/to/file" "http://localhost:8080/files/upload?dir=/home/swap/documents"
+  curl -H "Authorization: Bearer $TOKEN" -F "file=@/path/to/file" "http://localhost:8080/files/upload?dir=/home/swap/documents"
   ```
 
 ---
 
 ## Endpoints
+
+### 👤 User Management
+
+#### Register (Initial Setup)
+
+Endpoint:
+
+```http
+POST /auth/register
+```
+
+- Description: Register the first user. Fails if a user already exists.
+- Body: `{"username": "...", "password": "..."}`
+- Response: HTTP 201 Created.
+
+#### Login
+
+Endpoint:
+
+```http
+POST /auth/login
+```
+
+- Description: Authenticate and receive a session token.
+- Body: `{"username": "...", "password": "..."}`
+- Response: `{"token": "..."}`
+
+#### Logout
+
+Endpoint:
+
+```http
+POST /auth/logout
+```
+
+- Description: Invalidate the current session token.
+- Header: `Authorization: Bearer <token>`
+
+---
 
 ### 📁 View Files and Folders
 
@@ -32,6 +96,7 @@ Endpoint:
 GET /files/view?dir={directory_path}
 ```
 
+- **Requires Auth**: Yes
 - Description: Return the contents of a directory.
 - Parameters:
   - `dir` (string, required): Path of the directory to list (must be inside the monitored root).
@@ -62,6 +127,7 @@ Endpoint:
 POST /files/create-directory?path={directory_path}
 ```
 
+- **Requires Auth**: Yes
 - Description: Create a new directory at the specified path.
 - Parameters:
   - `path` (string, required): Target directory path (inside monitored root).
@@ -70,7 +136,7 @@ POST /files/create-directory?path={directory_path}
 Example:
 
 ```bash
-curl -X POST "http://localhost:8080/files/create-directory?path=/home/swap/new_folder"
+curl -H "Authorization: Bearer $TOKEN" -X POST "http://localhost:8080/files/create-directory?path=/home/swap/new_folder"
 ```
 
 ---
@@ -83,6 +149,7 @@ Endpoint:
 POST /files/upload?dir={directory_path}
 ```
 
+- **Requires Auth**: Yes
 - Description: Upload a file via multipart form-data.
 - Parameters:
   - `dir` (string, required): Destination directory.
@@ -92,12 +159,14 @@ POST /files/upload?dir={directory_path}
 Example:
 
 ```bash
-curl -F "file=@/tmp/example.txt" "http://localhost:8080/files/upload?dir=/home/swap/documents"
+curl -H "Authorization: Bearer $TOKEN" -F "file=@/tmp/example.txt" "http://localhost:8080/files/upload?dir=/home/swap/documents"
 ```
 
 ---
 
 ### ⚙️ Chunked Upload (for large files)
+
+All chunked upload endpoints require `Authorization: Bearer <token>`.
 
 1. Start session
 
@@ -114,7 +183,7 @@ POST /files/upload/chunk/start?filename={filename}
 Example:
 
 ```bash
-curl -X POST "http://localhost:8080/files/upload/chunk/start?filename=largeFile.zip"
+curl -H "Authorization: Bearer $TOKEN" -X POST "http://localhost:8080/files/upload/chunk/start?filename=largeFile.zip"
 ```
 
 2. Upload chunk
@@ -134,7 +203,7 @@ POST /files/upload/chunk?filename={filename}&chunk_index={index}
 Example:
 
 ```bash
-curl --data-binary @chunk0.bin "http://localhost:8080/files/upload/chunk?filename=largeFile.zip&chunk_index=0"
+curl -H "Authorization: Bearer $TOKEN" --data-binary @chunk0.bin "http://localhost:8080/files/upload/chunk?filename=largeFile.zip&chunk_index=0"
 ```
 
 3. Complete upload
@@ -152,7 +221,7 @@ POST /files/upload/chunk/complete?filename={filename}&dir={directory_path}
 Example:
 
 ```bash
-curl -X POST "http://localhost:8080/files/upload/chunk/complete?filename=largeFile.zip&dir=/home/swap/documents"
+curl -H "Authorization: Bearer $TOKEN" -X POST "http://localhost:8080/files/upload/chunk/complete?filename=largeFile.zip&dir=/home/swap/documents"
 ```
 
 ---
@@ -187,6 +256,7 @@ Endpoint:
 GET /files/d/t/{token}
 ```
 
+- **Requires Auth**: No (Token acts as auth)
 - Description: Download the file referenced by the one-time token.
 - Note: Tokens are valid for one use only.
 
@@ -208,6 +278,7 @@ Endpoint:
 GET /files/view-image?path={file_path}
 ```
 
+- **Requires Auth**: Yes
 - Description: Serve the raw image file directly.
 - Features:
   - Supports client-side caching (7 days).
@@ -217,7 +288,7 @@ GET /files/view-image?path={file_path}
 Example:
 
 ```bash
-curl "http://localhost:8080/files/view-image?path=/home/swap/photos/vacation.jpg"
+curl -H "Authorization: Bearer $TOKEN" "http://localhost:8080/files/view-image?path=/home/swap/photos/vacation.jpg"
 ```
 
 #### Get Thumbnail
@@ -228,14 +299,23 @@ Endpoint:
 GET /files/thumbnail?path={file_path}
 ```
 
+- **Requires Auth**: Yes (Header or Query Param)
 - Description: Get a resized (max 200px) JPEG thumbnail of an image.
 - Features: Server-side caching of generated thumbnails.
-- Query: `path` (string, required).
+- Query:
+  - `path` (string, required).
+  - `tkn` (string, optional): Auth token, for use in `<img>` tags.
 
-Example:
+Example (Header):
 
 ```bash
-curl "http://localhost:8080/files/thumbnail?path=/home/swap/photos/vacation.jpg"
+curl -H "Authorization: Bearer $TOKEN" "http://localhost:8080/files/thumbnail?path=/home/swap/photos/vacation.jpg"
+```
+
+Example (Query Param):
+
+```bash
+curl "http://localhost:8080/files/thumbnail?path=/home/swap/photos/vacation.jpg&tkn=$TOKEN"
 ```
 
 ---
@@ -248,6 +328,7 @@ Endpoint:
 GET /api/system/get-root-path
 ```
 
+- **Requires Auth**: Yes
 - Description: Retrieve the monitored root directory path.
 - Response: JSON object with `root_path` field.
   Example response:
