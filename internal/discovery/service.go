@@ -14,6 +14,7 @@ import (
 // It registers the service as "_aaxion._tcp" in the "local." domain.
 func StartDiscoveryService(port int) {
 	hostname, _ := os.Hostname()
+
 	if hostname == "" {
 		hostname = "Unknown"
 	}

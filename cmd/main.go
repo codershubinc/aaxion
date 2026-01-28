@@ -3,6 +3,7 @@ package main
 import (
 	"aaxion/internal/api"
 	"aaxion/internal/db"
+	"aaxion/internal/discovery"
 	"fmt"
 	"log"
 	"net"
@@ -25,7 +26,8 @@ func startServer() {
 	api.RegisterRoutes()
 
 	// Start mDNS discovery service
-	// discovery.StartDiscoveryService(port)
+	discovery.StartDiscoveryService(port)
+	log.Println("mDNS discovery service started at port", port)
 
 	// Wrap the default mux with CORS middleware
 	handler := corsMiddleware(http.DefaultServeMux)
