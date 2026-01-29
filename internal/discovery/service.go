@@ -10,8 +10,6 @@ import (
 	"github.com/grandcat/zeroconf"
 )
 
-// StartDiscoveryService starts an mDNS service to make the server discoverable on the local network.
-// It registers the service as "_aaxion._tcp" in the "local." domain.
 func StartDiscoveryService(port int) {
 	hostname, _ := os.Hostname()
 
