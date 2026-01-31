@@ -10,7 +10,11 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 		authQuery := r.URL.Query().Get("tkn")
-		if (authQuery != "") && strings.Contains(r.URL.String(), "/files/thumbnail") || strings.Contains(r.URL.String(), "/files/download") {
+		// Allow token in query param for static resources and streaming where headers are hard to set (e.g. img/video tags)
+		if authQuery != "" && (strings.Contains(r.URL.String(), "/files/thumbnail") ||
+			strings.Contains(r.URL.String(), "/files/download") ||
+			strings.Contains(r.URL.String(), "/api/stream/movie") ||
+			strings.Contains(r.URL.String(), "/files/view-image")) {
 			authHeader = "Bearer " + authQuery
 		}
 

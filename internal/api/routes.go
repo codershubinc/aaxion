@@ -4,6 +4,7 @@ import (
 	"aaxion/internal/auth"
 	"aaxion/internal/files"
 	img "aaxion/internal/image"
+	"aaxion/internal/streamer/movies"
 	sys "aaxion/internal/system"
 	"net/http"
 )
@@ -40,8 +41,22 @@ func RegisterRoutes() {
 	http.HandleFunc("/api/system/get-root-path", auth.AuthMiddleware(sys.GetSystemRootPath))
 	http.HandleFunc("/api/system/storage", auth.AuthMiddleware(sys.GetSystemStorage))
 
+	// Movies operations
+	http.HandleFunc("/api/movies/search", auth.AuthMiddleware(movies.SearchMoviesApi))
+	http.HandleFunc("/api/movies/list", auth.AuthMiddleware(movies.ListMoviesApi))
+	http.HandleFunc("/api/movies/add", auth.AuthMiddleware(movies.AddMovieApi))
+	http.HandleFunc("/api/movies/edit", auth.AuthMiddleware(movies.EditMovieApi))
+
+	// Streamer operations
+	http.HandleFunc("/api/stream/movie", auth.AuthMiddleware(movies.StreamMovieApi))
+
 	// this is temp route to serve index.html for testing
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "index.html")
+	})
+
+	// Web interface for testing streaming
+	http.HandleFunc("/web", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "web/stream_test.html")
 	})
 }

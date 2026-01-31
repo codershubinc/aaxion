@@ -34,23 +34,26 @@ func InitDb() error {
 	//create tables if not exist
 	log.Println("Creating tables")
 
-	_, err = dbConn.Exec(tokensTableSchema)
-	if err != nil {
-		return err
+	schemas := []string{
+		tokensTableSchema,
+		usersTableSchema,
+		authTokensTableSchema,
+		moviesTableSchema,
+		seriesTableSchema,
+		episodesTableSchema,
 	}
 
-	_, err = dbConn.Exec(usersTableSchema)
-	if err != nil {
-		return err
+	for _, schema := range schemas {
+		_, err := dbConn.Exec(schema)
+		if err != nil {
+			log.Println("Error creating table: ", err)
+			return err
+		}
 	}
-
-	_, err = dbConn.Exec(authTokensTableSchema)
-	if err != nil {
-		return err
-	}
+	log.Println("DB initialized successfully")
 	return nil
 }
 
-func getDbConn() *sql.DB {
+func GetDB() *sql.DB {
 	return dbConn
 }

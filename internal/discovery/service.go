@@ -51,5 +51,7 @@ func StartDiscoveryService(port int) {
 
 		log.Println("Stopping discovery service...")
 		server.Shutdown()
+		log.Println("Cleanup complete. Exiting.")
+		os.Exit(0)
 	}()
 }

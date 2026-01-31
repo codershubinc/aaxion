@@ -1,0 +1,135 @@
+{
+    "info": {
+        "_postman_id": "aaxion-movies-api",
+        "name": "AAXION Movies API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Login",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"username\": \"admin\",\n    \"password\": \"password\"\n}"
+                },
+                "url": {
+                    "raw": "http://localhost:8080/auth/login",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8080",
+                    "path": [
+                        "auth",
+                        "login"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Add Movie",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer 637b41796b0a7c39ab04370f324647b0a90750f97286550e483e88c0dae68c74",
+                        "type": "text"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"title\": \"Inception\",\n    \"file_id\": 123,\n    \"file_path\": \"/movies/inception.mp4\",\n    \"description\": \"A thief who steals corporate secrets through the use of dream-sharing technology.\",\n    \"poster_path\": \"/images/inception.jpg\"\n}"
+                },
+                "url": {
+                    "raw": "http://localhost:8080/api/movies/add",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8080",
+                    "path": [
+                        "api",
+                        "movies",
+                        "add"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "List Movies",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer 637b41796b0a7c39ab04370f324647b0a90750f97286550e483e88c0dae68c74",
+                        "type": "text"
+                    }
+                ],
+                "url": {
+                    "raw": "http://localhost:8080/api/movies/list",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8080",
+                    "path": [
+                        "api",
+                        "movies",
+                        "list"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Search Movies",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer 637b41796b0a7c39ab04370f324647b0a90750f97286550e483e88c0dae68c74",
+                        "type": "text"
+                    }
+                ],
+                "url": {
+                    "raw": "http://localhost:8080/api/movies/search?q=Inception",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8080",
+                    "path": [
+                        "api",
+                        "movies",
+                        "search"
+                    ],
+                    "query": [
+                        {
+                            "key": "q",
+                            "value": "Inception"
+                        }
+                    ]
+                }
+            },
+            "response": []
+        }
+    ]
+}
