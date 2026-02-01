@@ -1,6 +1,7 @@
 package db
 
 import (
+	"aaxion/internal/models"
 	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
@@ -8,12 +9,6 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 )
-
-type User struct {
-	ID           int
-	Username     string
-	PasswordHash string
-}
 
 func CreateUser(username, password string) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -26,7 +21,7 @@ func CreateUser(username, password string) error {
 }
 
 func AuthenticateUser(username, password string) (string, error) {
-	var user User
+	var user models.User
 	err := dbConn.QueryRow("SELECT id, password_hash FROM users WHERE username = ?", username).Scan(&user.ID, &user.PasswordHash)
 	if err != nil {
 		if err == sql.ErrNoRows {

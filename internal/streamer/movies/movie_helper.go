@@ -2,22 +2,11 @@ package movies
 
 import (
 	"aaxion/internal/db"
+	"aaxion/internal/models"
 	"database/sql"
 	"log"
 	"time"
 )
-
-type Movie struct {
-	ID          int64
-	Title       string
-	FileID      int64
-	CreatedAt   time.Time
-	FilePath    string
-	Description string
-	PosterPath  string
-	Size        int64
-	MimeType    string
-}
 
 func AddMovie(title string, fileID int64, filePath, description, posterPath string, size int64, mimeType string) error {
 	stmt := `INSERT INTO movies (title, file_id, file_path, description, poster_path, size, mime_type) VALUES (?, ?, ?, ?, ?, ?, ?)`
@@ -47,11 +36,11 @@ func UpdateMovie(id int64, title, description, posterPath string) error {
 	return nil
 }
 
-func GetMovieByID(id int64) (*Movie, error) {
+func GetMovieByID(id int64) (*models.Movie, error) {
 	stmt := `SELECT id, title, file_id, created_at, file_path, description, poster_path, size, mime_type FROM movies WHERE id = ?`
 	row := db.GetDB().QueryRow(stmt, id)
 
-	var m Movie
+	var m models.Movie
 	var createdAt string
 	var description, posterPath, mimeType sql.NullString
 	var size sql.NullInt64
@@ -82,7 +71,7 @@ func GetMovieByID(id int64) (*Movie, error) {
 	return &m, nil
 }
 
-func ListMovies() ([]Movie, error) {
+func ListMovies() ([]models.Movie, error) {
 	stmt := `SELECT id, title, file_id, created_at, file_path, description, poster_path, size, mime_type FROM movies`
 	rows, err := db.GetDB().Query(stmt)
 	if err != nil {
@@ -90,9 +79,9 @@ func ListMovies() ([]Movie, error) {
 	}
 	defer rows.Close()
 
-	var movies []Movie
+	var movies []models.Movie
 	for rows.Next() {
-		var m Movie
+		var m models.Movie
 		var createdAt string
 		var description, posterPath, mimeType sql.NullString
 		var size sql.NullInt64
@@ -126,7 +115,7 @@ func ListMovies() ([]Movie, error) {
 	return movies, nil
 }
 
-func SearchMovies(query string) ([]Movie, error) {
+func SearchMovies(query string) ([]models.Movie, error) {
 	stmt := `SELECT id, title, file_id, created_at, file_path, description, poster_path, size, mime_type 
             FROM movies 
             WHERE title LIKE ? OR description LIKE ? 
@@ -139,9 +128,9 @@ func SearchMovies(query string) ([]Movie, error) {
 	}
 	defer rows.Close()
 
-	var movies []Movie
+	var movies []models.Movie
 	for rows.Next() {
-		var m Movie
+		var m models.Movie
 		var createdAt string
 		var description, posterPath, mimeType sql.NullString
 		var size sql.NullInt64
