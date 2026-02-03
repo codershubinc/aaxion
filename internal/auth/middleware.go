@@ -14,7 +14,8 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		if authQuery != "" && (strings.Contains(r.URL.String(), "/files/thumbnail") ||
 			strings.Contains(r.URL.String(), "/files/download") ||
 			strings.Contains(r.URL.String(), "/api/stream/movie") ||
-			strings.Contains(r.URL.String(), "/files/view-image")) {
+			strings.Contains(r.URL.String(), "/files/view-image") ||
+			strings.Contains(r.URL.String(), "/api/stream/episode")) {
 			authHeader = "Bearer " + authQuery
 		}
 
