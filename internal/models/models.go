@@ -52,5 +52,9 @@ type Episode struct {
 	SeasonNumber  int       `json:"season_number"`
 	EpisodeNumber int       `json:"episode_number"`
 	Title         string    `json:"title"`
+	Description   string    `json:"description"`
+	FilePath      string    `json:"file_path"`
+	Size          int64     `json:"size"`
+	MimeType      string    `json:"mime_type"`
 	CreatedAt     time.Time `json:"created_at"`
 }

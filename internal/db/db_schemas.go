@@ -63,6 +63,10 @@ CREATE TABLE IF NOT EXISTS episodes (
 	season_number INTEGER NOT NULL,
 	episode_number INTEGER NOT NULL,
 	title TEXT,                 -- Optional: "Pilot", "Ozymandias"
+	description TEXT,
+	file_path TEXT NOT NULL,
+	size INTEGER,
+	mime_type TEXT,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	FOREIGN KEY(series_id) REFERENCES series(id) ON DELETE CASCADE,
 	FOREIGN KEY(file_id) REFERENCES files(id) ON DELETE CASCADE,
