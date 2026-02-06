@@ -1,15 +1,17 @@
 package webdav
 
 import (
+	"aaxion/internal/db"
 	"fmt"
 	"net/http"
+
 	"os"
 
 	"golang.org/x/net/webdav"
 )
 
 func NewHandler(basePath string) http.Handler {
-	return &webdav.Handler{
+	handler := &webdav.Handler{
 		Prefix:     "/webdav",
 		FileSystem: webdav.Dir(basePath),
 		LockSystem: webdav.NewMemLS(),
@@ -19,6 +21,17 @@ func NewHandler(basePath string) http.Handler {
 			}
 		},
 	}
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user, pass, ok := r.BasicAuth()
+		if !ok || !db.VerifyCredentials(user, pass) {
+			w.Header().Set("WWW-Authenticate", `Basic realm="Aaxion"`)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		handler.ServeHTTP(w, r)
+	})
 }
 
 func GetRootPath() string {

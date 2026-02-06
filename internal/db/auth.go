@@ -52,6 +52,19 @@ func AuthenticateUser(username, password string) (string, error) {
 	return token, nil
 }
 
+// VerifyCredentials checks username and password without creating a session token
+// Used for WebDAV Basic Auth
+func VerifyCredentials(username, password string) bool {
+	var hash string
+	err := dbConn.QueryRow("SELECT password_hash FROM users WHERE username = ?", username).Scan(&hash)
+	if err != nil {
+		return false
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
+}
+
 func VerifyToken(token string) (bool, error) {
 	var id int
 	err := dbConn.QueryRow("SELECT id FROM auth_tokens WHERE token = ?", token).Scan(&id)
