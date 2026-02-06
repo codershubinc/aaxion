@@ -15,7 +15,6 @@ func NewHandler(basePath string) http.Handler {
 		LockSystem: webdav.NewMemLS(),
 		Logger: func(r *http.Request, err error) {
 			if err != nil {
-				// Log the error
 				fmt.Printf("WEBDAV [%s]: %s, ERROR: %s\n", r.Method, r.URL.Path, err)
 			}
 		},
