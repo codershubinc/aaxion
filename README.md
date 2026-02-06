@@ -9,13 +9,15 @@
 ## 🚀 Key Features
 
 - **Zero-Buffer Streaming:** Uploads and downloads are streamed directly to disk/network. A 10GB file transfer uses only ~32KB of RAM.
-- **Resumable Uploads:** Supports chunked uploading to bypass network limits (e.g., Cloudflare Tunnel) and resume interrupted transfers.
+- **Chunked Uploads:** Supports chunked uploading to bypass network limits (e.g., Cloudflare Tunnel).
 - **Temporary Sharing:** Generate one-time secure links for external file sharing.
 - **Cross-Platform:** Written in Go, runs on Linux (primary) and Windows.
 
 ---
 
 ## 📥 Installation
+
+### Option 1: Binary Installation
 
 1.  **Download:** Check the [latest release](https://github.com/codershubinc/aaxion/releases) and get the binary for your OS.
 2.  **Permissions:**
@@ -28,6 +30,62 @@
     ./aaxion-windows-amd64.exe
     ```
 4.  **Enjoy:** The server starts on port `8080` by default.
+
+### Option 2: Docker Installation 🐳
+
+Run Aaxion in a container for easy deployment and isolation:
+
+#### Quick Start with Docker
+
+```bash
+# Build the image
+docker build -t aaxion:latest .
+
+# Create data directory
+mkdir -p data data/db
+
+# Run the container (mounting your storage directory)
+docker run -d \
+  -p 8080:8080 \
+  -v $(pwd)/data:/home/aaxion \
+  -v $(pwd)/data/db:/data \
+  --name aaxion-server \
+  aaxion:latest
+```
+
+#### Using Docker Compose (Recommended)
+
+1. **Prepare directories:**
+   ```bash
+   mkdir -p data data/db
+   chmod 755 data data/db
+   ```
+
+2. **Start the service:**
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **View logs:**
+   ```bash
+   docker-compose logs -f
+   ```
+
+4. **Stop the service:**
+   ```bash
+   docker-compose down
+   ```
+
+**Docker Features:**
+- Persistent storage via volumes
+- Automatic restarts
+- Health checks
+- Runs as non-root user for security
+- Minimal Alpine Linux base (~20MB image)
+
+**Note:** The container runs as user `aaxion` (UID 1000). For accessing host directories, ensure proper permissions or run with your user ID. See the [Docker Deployment Guide](./docs/docker.md) for details.
+
+For more details, see the [Docker Deployment Guide](./docs/docker.md).
 
 ---
 

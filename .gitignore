@@ -18,3 +18,9 @@ Thumbs.db
 temp
 
 aaxion
+
+# Docker data volumes
+data/
+
+# Environment files
+.env
