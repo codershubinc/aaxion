@@ -23,8 +23,17 @@ func NewHandler(basePath string) http.Handler {
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Allow OPTIONS requests without authentication for service discovery
+		if r.Method == "OPTIONS" {
+			handler.ServeHTTP(w, r)
+			return
+		}
+
 		user, pass, ok := r.BasicAuth()
 		if !ok || !db.VerifyCredentials(user, pass) {
+			if user != "" {
+				fmt.Printf("WebDAV Auth Failed: User='%s'\n", user)
+			}
 			w.Header().Set("WWW-Authenticate", `Basic realm="Aaxion"`)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
