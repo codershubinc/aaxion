@@ -21,6 +21,12 @@ Most endpoints require authentication. You must obtain a token and include it in
 
 ## Quick examples
 
+- Create initial user (only if no users exist):
+
+  ```bash
+  curl -X POST -d '{"username":"your_user","password":"your_pass"}' "http://localhost:8080/auth/register"
+  ```
+
 - Login:
 
   ```bash

@@ -60,7 +60,7 @@ func createDir(path string) error {
 }
 
 // UploadLargeFileToDir handles massive files (10GB+) efficiently
-func uploadLargeFileToDir(w http.ResponseWriter, r *http.Request, targetDir string) error {
+func UploadLargeFileToDir(w http.ResponseWriter, r *http.Request, targetDir string) error {
 	// 1. Limit the size of incoming request to 11GB
 	const maxUploadSize = 11 << 30
 

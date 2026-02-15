@@ -1,6 +1,7 @@
 package api
 
 import (
+	"aaxion/internal/anonymous_upload"
 	"aaxion/internal/auth"
 	"aaxion/internal/files"
 	img "aaxion/internal/image"
@@ -43,6 +44,12 @@ func RegisterRoutes() {
 	http.HandleFunc("/files/d/t/{token}", files.FileTempShare)
 	http.HandleFunc("/files/d/r", files.RequestFileTempShare)
 
+	// Token-based anonymous upload routes
+	anonymous_upload.RegisterRoutes()
+
+	// Initialize token cleanup
+	anonymous_upload.Initialize()
+
 	// system info
 	http.HandleFunc("/api/system/get-root-path", auth.AuthMiddleware(sys.GetSystemRootPath))
 	http.HandleFunc("/api/system/storage", auth.AuthMiddleware(sys.GetSystemStorage))
@@ -67,13 +74,56 @@ func RegisterRoutes() {
 	http.HandleFunc("/api/stream/movie", auth.AuthMiddleware(movies.StreamMovieApi))
 	http.HandleFunc("/api/stream/episode", auth.AuthMiddleware(series.StreamEpisodeApi))
 
-	// this is temp route to serve index.html for testing
+	// this is temp route to serve landing page
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "index.html")
+		if r.URL.Path != "/" {
+			http.NotFound(w, r)
+			return
+		}
+		http.ServeFile(w, r, "web/landing.html")
 	})
 
-	// Web interface for testing streaming
+	// Login/Register page
+	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "web/login.html")
+	})
+
+	// Web interface for testing temp file share
 	http.HandleFunc("/web", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "web/stream_test.html")
+		http.ServeFile(w, r, "web/index.html")
+	})
+
+	// Web interface for token-based uploads
+	http.HandleFunc("/upload", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "web/anonymous/upload.html")
+	})
+
+	// Web interface for token management (client-side auth check)
+	http.HandleFunc("/admin/tokens", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "web/anonymous/token-manager.html")
+	})
+
+	// Serve static assets for web interface
+	http.HandleFunc("/web/app.js", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/javascript")
+		http.ServeFile(w, r, "web/app.js")
+	})
+	http.HandleFunc("/web/styles.css", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/css")
+		http.ServeFile(w, r, "web/styles.css")
+	})
+
+	// Serve static assets for anonymous upload
+	http.HandleFunc("/web/anonymous/token-upload.js", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/javascript")
+		http.ServeFile(w, r, "web/anonymous/token-upload.js")
+	})
+	http.HandleFunc("/web/anonymous/token-manager.js", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/javascript")
+		http.ServeFile(w, r, "web/anonymous/token-manager.js")
+	})
+	http.HandleFunc("/web/anonymous/auth-helper.js", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/javascript")
+		http.ServeFile(w, r, "web/anonymous/auth-helper.js")
 	})
 }

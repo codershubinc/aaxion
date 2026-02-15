@@ -69,7 +69,7 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := uploadLargeFileToDir(w, r, targetDir)
+	err := UploadLargeFileToDir(w, r, targetDir)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

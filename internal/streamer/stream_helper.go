@@ -3,6 +3,7 @@ package streamer
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -11,6 +12,9 @@ import (
 	"strconv"
 	"strings"
 )
+
+// Define a chunk size (e.g., 1MB) to prevent sending the whole file at once
+const MAX_CHUNK_SIZE = 1 * 1024 * 1024
 
 func isBrowserNative(filename string) bool {
 	browserNativeFormats := []string{
@@ -47,13 +51,14 @@ func StreamFileRange(w http.ResponseWriter, r *http.Request, filePath string, mi
 	rangeHeader := r.Header.Get("Range")
 
 	if rangeHeader == "" {
-		w.Header().Set("Content-Type", mimeType)
-		w.Header().Set("Content-Length", strconv.FormatInt(totalSize, 10))
-		w.Header().Set("Accept-Ranges", "bytes")
-		w.WriteHeader(http.StatusOK)
-		io.Copy(w, file)
+		// Optional: You might want to default to sending the first chunk
+		// instead of an error if you want to support direct downloads/playback without headers,
+		// but keeping your current logic is fine too.
+		log.Println("No range headers")
+		http.Error(w, "Range header required", http.StatusBadRequest)
 		return
 	}
+	// log.Println("Range headers found", rangeHeader)
 
 	re := regexp.MustCompile(`bytes=(\d+)-(\d*)`)
 	matches := re.FindStringSubmatch(rangeHeader)
@@ -63,14 +68,24 @@ func StreamFileRange(w http.ResponseWriter, r *http.Request, filePath string, mi
 	}
 
 	start, _ := strconv.ParseInt(matches[1], 10, 64)
-	end := int64(-1)
+	var end int64
+
+	// --- FIX START ---
 	if matches[2] != "" {
-		end, _ = strconv.ParseInt(matches[2], 10, 64)
+		// Client requested specific end
+		parsedEnd, _ := strconv.ParseInt(matches[2], 10, 64)
+		end = parsedEnd
+	} else {
+		// Client requested "rest of file" (bytes=0-)
+		// We MUST cap this, or we send the whole 2GB file
+		end = start + MAX_CHUNK_SIZE - 1
 	}
 
-	if end == -1 || end >= totalSize {
+	// Safety check: ensure we don't go past the actual file size
+	if end >= totalSize {
 		end = totalSize - 1
 	}
+	// --- FIX END ---
 
 	if start > end {
 		w.Header().Set("Content-Range", fmt.Sprintf("bytes */%d", totalSize))
@@ -94,6 +109,6 @@ func StreamFileRange(w http.ResponseWriter, r *http.Request, filePath string, mi
 	w.Header().Set("Content-Type", mimeType)
 	w.WriteHeader(http.StatusPartialContent) // 206
 
-	// Copy specific amount of bytes
+	// Copy ONLY the specific chunk size
 	io.CopyN(w, file, contentLength)
 }
