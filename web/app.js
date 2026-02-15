@@ -52,7 +52,7 @@ function showManualCopyDialog(text, label) {
         </div>
     `;
     document.body.appendChild(overlay);
-    
+
     // Auto-select the text
     setTimeout(() => {
         const textarea = document.getElementById('manualCopyText');
@@ -220,7 +220,7 @@ async function copyToClipboard() {
         document.body.appendChild(textarea);
         textarea.focus();
         textarea.select();
-        
+
         try {
             document.execCommand('copy');
             showToast('Copied!', 'Link copied to clipboard', 'success');
@@ -228,7 +228,7 @@ async function copyToClipboard() {
             // Show manual copy dialog
             showManualCopyDialog(text, 'Share Link');
         }
-        
+
         document.body.removeChild(textarea);
     }
 }

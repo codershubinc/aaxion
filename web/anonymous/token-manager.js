@@ -49,7 +49,7 @@ function showManualCopyDialog(text, label) {
         </div>
     `;
     document.body.appendChild(overlay);
-    
+
     // Auto-select the text
     setTimeout(() => {
         const textarea = document.getElementById('manualCopyText');
@@ -108,7 +108,7 @@ async function generateToken() {
 async function copyToken() {
     const tokenInput = document.getElementById('generatedToken');
     const text = tokenInput.value;
-    
+
     try {
         await navigator.clipboard.writeText(text);
         showToast('Copied!', 'Token copied to clipboard', 'success');
@@ -122,7 +122,7 @@ async function copyToken() {
         document.body.appendChild(textarea);
         textarea.focus();
         textarea.select();
-        
+
         try {
             document.execCommand('copy');
             showToast('Copied!', 'Token copied to clipboard', 'success');
@@ -130,7 +130,7 @@ async function copyToken() {
             // Show manual copy dialog
             showManualCopyDialog(text, 'Token');
         }
-        
+
         document.body.removeChild(textarea);
     }
 }
@@ -139,7 +139,7 @@ async function copyToken() {
 async function copyURL() {
     const urlInput = document.getElementById('generatedURL');
     const text = urlInput.value;
-    
+
     try {
         await navigator.clipboard.writeText(text);
         showToast('Copied!', 'URL copied to clipboard', 'success');
@@ -153,7 +153,7 @@ async function copyURL() {
         document.body.appendChild(textarea);
         textarea.focus();
         textarea.select();
-        
+
         try {
             document.execCommand('copy');
             showToast('Copied!', 'URL copied to clipboard', 'success');
@@ -161,7 +161,7 @@ async function copyURL() {
             // Show manual copy dialog
             showManualCopyDialog(text, 'Upload URL');
         }
-        
+
         document.body.removeChild(textarea);
     }
 }
@@ -287,7 +287,7 @@ async function copyUploadLink(token) {
         document.body.appendChild(textarea);
         textarea.focus();
         textarea.select();
-        
+
         try {
             document.execCommand('copy');
             showToast('Copied!', 'Upload link copied to clipboard', 'success');
@@ -295,7 +295,7 @@ async function copyUploadLink(token) {
             // Show manual copy dialog
             showManualCopyDialog(url, 'Upload Link');
         }
-        
+
         document.body.removeChild(textarea);
     }
 }
