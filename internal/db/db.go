@@ -41,6 +41,7 @@ func InitDb() error {
 		moviesTableSchema,
 		seriesTableSchema,
 		episodesTableSchema,
+		discoveryDevices,
 	}
 
 	for _, schema := range schemas {

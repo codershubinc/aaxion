@@ -2,7 +2,7 @@ package db
 
 import "crypto/rand"
 
-func createToken() (token string, err error) {
+func CreateToken() (token string, err error) {
 
 	chars := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_~"
 	tokenBytes := make([]byte, 32)

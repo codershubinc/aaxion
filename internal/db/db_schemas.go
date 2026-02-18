@@ -11,6 +11,14 @@ CREATE TABLE IF NOT EXISTS tokens (
 );
 `
 
+var discoveryDevices = `
+CREATE TABLE IF NOT EXISTS discovery_devices (
+	id TEXT PRIMARY KEY,
+	name TEXT NOT NULL,
+	created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+`
+
 var usersTableSchema = `
 CREATE TABLE IF NOT EXISTS users (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,

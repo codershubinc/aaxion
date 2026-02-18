@@ -3,7 +3,7 @@ package db
 import "log"
 
 func CreateFileShareTempToken(filePath string) (token string, err error) {
-	tk, err := createToken()
+	tk, err := CreateToken()
 	if err != nil {
 		log.Println("err", err)
 		return "", err

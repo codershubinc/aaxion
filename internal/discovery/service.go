@@ -13,15 +13,28 @@ import (
 func StartDiscoveryService(port int) {
 	hostname, _ := os.Hostname()
 
-	if hostname == "" {
-		hostname = "Unknown"
+	d, err := GetDiscoveryDevices()
+	if err != nil || d.ID == "" {
+		log.Printf("Failed to get discovery device info: %v", err)
+		cd, err := CreateDiscoveryDevice(hostname)
+		if err != nil {
+			log.Printf("Failed to create discovery device: %v", err)
+		}
+		log.Printf("Created discovery device with ID: %s", cd)
+		d, err = GetDiscoveryDevices()
+		if err != nil {
+			log.Printf("Failed to get discovery device info after creation: %v", err)
+		}
 	}
+	log.Println("got device", d)
 	instanceName := fmt.Sprintf("Aaxion Server + %s", hostname)
 
 	// Metadata to help clients identify the server
 	meta := []string{
-		"version=1.0",
+		"version=unreleased",
 		"description=Aaxion File Server",
+		fmt.Sprintf("device_id=%s", d.ID),
+		fmt.Sprintf("device_name=%s", d.Name),
 	}
 
 	// Register the service

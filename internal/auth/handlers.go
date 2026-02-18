@@ -2,6 +2,7 @@ package auth
 
 import (
 	"aaxion/internal/db"
+	"aaxion/internal/discovery"
 	"encoding/json"
 	"net/http"
 )
@@ -12,7 +13,8 @@ type Credentials struct {
 }
 
 type AuthResponse struct {
-	Token string `json:"token"`
+	Token      string               `json:"token"`
+	DeviceInfo discovery.DeviceInfo `json:"device_info"`
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
@@ -68,8 +70,15 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
 	}
+	deviceInfo, err := discovery.GetDiscoveryDevices()
+	if err != nil {
+		http.Error(w, "Failed to get device info", http.StatusInternalServerError)
+		return
+	}
 
-	json.NewEncoder(w).Encode(AuthResponse{Token: token})
+	w.Header().Set("Content-Type", "application/json")
+
+	json.NewEncoder(w).Encode(AuthResponse{Token: token, DeviceInfo: deviceInfo})
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
