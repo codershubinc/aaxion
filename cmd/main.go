@@ -12,7 +12,13 @@ import (
 )
 
 func main() {
-	fmt.Println("its aaxion")
+	fmt.Println(`
+    _        _    __  __  ___   ___   _   _ 
+   / \      / \   \ \/ / |_ _| / _ \ | \ | |
+  / _ \    / _ \   >  <   | | | | | ||  \| |
+ / ___ \  / ___ \ / /\ \  | | | |_| || |\  |
+/_/   \_\/_/   \_\/_/\_\ |___| \___/ |_| \_|
+`)
 	err := db.InitDb()
 	if err != nil {
 		log.Println("Got err", err)
