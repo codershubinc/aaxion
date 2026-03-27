@@ -40,17 +40,14 @@ func CreateDiscoveryDevice(name string) (deviceId string, err error) {
 func GetDiscoveryDevices() (dI DeviceInfo, err error) {
 	deviceInfo := DeviceInfo{}
 
-	// 1. Use QueryRow for single records
-	// 2. Added ORDER BY for consistent results
-	// 3. Added LIMIT 1 for performance
 	query := "SELECT id, name FROM discovery_devices ORDER BY id ASC LIMIT 1"
 
 	err = db.GetDB().QueryRow(query).Scan(&deviceInfo.ID, &deviceInfo.Name)
 
 	if err != nil {
-		// Handle the case where the table is empty
+
 		if err == sql.ErrNoRows {
-			// Return empty struct and nil error (or handle as you see fit)
+
 			return DeviceInfo{}, nil
 		}
 		return DeviceInfo{}, err

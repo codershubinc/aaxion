@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/grandcat/zeroconf"
 )
@@ -29,7 +30,6 @@ func StartDiscoveryService(port int) {
 	log.Println("got device", d)
 	instanceName := fmt.Sprintf("Aaxion Server + %s", hostname)
 
-	// Metadata to help clients identify the server
 	meta := []string{
 		"version=unreleased",
 		"description=Aaxion File Server",
@@ -37,27 +37,35 @@ func StartDiscoveryService(port int) {
 		fmt.Sprintf("device_name=%s", d.Name),
 	}
 
-	// Register the service
-	// Instance name: instanceName
-	// Service type: "_aaxion._tcp" (clients should search for this)
-	// Domain: "local."
-	server, err := zeroconf.Register(
-		instanceName,
-		"_aaxion._tcp",
-		"local.",
-		port,
-		meta,
-		nil,
-	)
-	if err != nil {
-		log.Printf("Failed to register discovery service: %v", err)
-		return
-	}
-
-	log.Printf("Discovery service started on port %d (_aaxion._tcp.local.)", port)
-
-	// Build a shutdown mechanism to deregister the service cleanly
 	go func() {
+		var server *zeroconf.Server
+		var err error
+		maxRetries := 10
+
+		for i := 0; i < maxRetries; i++ {
+			server, err = zeroconf.Register(
+				instanceName,
+				"_aaxion._tcp",
+				"local.",
+				port,
+				meta,
+				nil,
+			)
+			if err == nil {
+				break
+			}
+			log.Printf("Failed to register discovery service (attempt %d/%d): %v", i+1, maxRetries, err)
+			time.Sleep(2 * time.Second)
+		}
+
+		if err != nil {
+			log.Printf("Failed to register discovery service after %d retries: %v", maxRetries, err)
+			return
+		}
+
+		log.Printf("Discovery service started on port %d (_aaxion._tcp.local.)", port)
+
+		// Build a shutdown mechanism to deregister the service cleanly
 		sig := make(chan os.Signal, 1)
 		signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 		<-sig
