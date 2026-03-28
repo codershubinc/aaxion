@@ -7,7 +7,8 @@ import (
 )
 
 func AddMusicRoutes() {
-	http.HandleFunc("/api/music/add", music.AddTrackApi)
-	http.HandleFunc("/api/music/search", music.SearchTracksApi)
+	http.HandleFunc("/music/add", music.AddTrackApi)
+	http.HandleFunc("/music/search", music.SearchTracksApi)
+	http.HandleFunc("/music/all", music.GetTracksApi)
 	http.HandleFunc("/api/devices", ws.GetDevicesHandler)
 }

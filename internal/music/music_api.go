@@ -50,6 +50,13 @@ func AddTrackApi(w http.ResponseWriter, r *http.Request) {
 			exactPath, err := DownloadYouTubeAudio(u, DIR)
 			if err != nil {
 				fmt.Printf("❌ Skip error: %v\n", err)
+				ws.Broadcast(map[string]any{
+					"type": "TRACK_ERROR",
+					"payload": map[string]any{
+						"message": "Failed to download track from YouTube",
+						"url":     u,
+					},
+				})
 				continue
 			}
 
