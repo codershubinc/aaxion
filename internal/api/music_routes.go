@@ -11,4 +11,5 @@ func AddMusicRoutes() {
 	http.HandleFunc("/music/search", music.SearchTracksApi)
 	http.HandleFunc("/music/all", music.GetTracksApi)
 	http.HandleFunc("/api/devices", ws.GetDevicesHandler)
+	http.HandleFunc("/music/stream", music.StreamTrackApi)
 }
