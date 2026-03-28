@@ -15,12 +15,13 @@ type Client struct {
 }
 
 // 📨 The Standardized Aaxion Envelope for JSON messages
+
 type WSMessage struct {
-	Type       string `json:"type"`                 // e.g., "TRACK_ADDED", "COMMAND", "STATE_SYNC"
-	SenderID   string `json:"senderId,omitempty"`   // Who sent it
-	DeviceName string `json:"deviceName,omitempty"` // Human readable (e.g., "Swapnil's iPhone")
-	TargetID   string `json:"targetId,omitempty"`   // Who should receive it (if it's a direct command)
-	Payload    any    `json:"payload"`              // The actual data
+	Type       string `json:"type"` // e.g., "TRACK_ADDED", "COMMAND", "STATE_SYNC"
+	SenderID   string `json:"senderId,omitempty"`
+	DeviceName string `json:"deviceName,omitempty"`
+	TargetID   string `json:"targetId,omitempty"`
+	Payload    any    `json:"payload"`
 }
 
 // ws upgrader ( it converts fucking http request to websocket suckers --it sucks ws forever until it gets spited out the server err ) and it also allows all origins (because we don't care about security in this project, i mean it's a local application, who the hell cares?)
@@ -33,7 +34,6 @@ var upgrader = websocket.Upgrader{
 }
 
 var (
-	// Map the unique deviceID directly to the Client struct now
 	clients   = make(map[string]*Client)
 	clientsMu sync.Mutex
 )
@@ -65,7 +65,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 1. Grab identity from the URL (e.g., ws://localhost:8080/ws?deviceId=xyz&deviceName=Desktop)
 	deviceID := r.URL.Query().Get("deviceId")
 	deviceName := r.URL.Query().Get("deviceName")
 
@@ -83,7 +82,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("🟢 %s connected to Aaxion Sync (ID: %s)", deviceName, deviceID)
 
-	// 📢 Shout that a new device joined so the frontend UI can update instantly
 	Broadcast(WSMessage{
 		Type:       "DEVICE_JOINED",
 		SenderID:   deviceID,
@@ -91,7 +89,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		Payload:    map[string]string{"status": "online"},
 	})
 
-	// ok let me tell you about myself  (on line no 68 )
+	// ok let me tell you about myself  (on line no 68 👇)
 	go func() {
 		defer func() {
 			clientsMu.Lock()
@@ -104,6 +102,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			Broadcast(WSMessage{Type: "DEVICE_LEFT", SenderID: deviceID})
 		}()
 
+		// this is line no 68 ==>
 		//  you can find me on every social media platform with the same username (codershubinc)
 		// instagram : https://www.instagram.com/codershubinc/
 		// twitter : https://twitter.com/codershubinc
@@ -117,9 +116,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 
-			// 🧠 THE NEW SWITCHBOARD LOGIC
 			if msg.Type == "COMMAND" && msg.TargetID != "" {
-				// Sneak the message directly to the Target device only
 				clientsMu.Lock()
 				if targetClient, exists := clients[msg.TargetID]; exists {
 					targetClient.Conn.WriteJSON(msg)
@@ -127,7 +124,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 				}
 				clientsMu.Unlock()
 			} else if msg.Type == "STATE_SYNC" {
-				// If a device updates its play state, shout it to everyone
 				Broadcast(msg)
 			}
 		}
