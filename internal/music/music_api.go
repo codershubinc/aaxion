@@ -65,17 +65,19 @@ func AddTrackApi(w http.ResponseWriter, r *http.Request) {
 				fmt.Printf("❌ Metadata error: %v\n", err)
 				continue
 			}
-
-			if err := db.AddTrack(trackData); err == nil {
-				// 📢 Shout to the WebSocket suckers!
-				ws.Broadcast(map[string]any{
-					"type": "TRACK_ADDED",
-					"state": map[string]any{
-						"track":    trackData,
-						"progress": fmt.Sprintf("%d/%d", i+1, len(urls)),
-					},
-				})
+			err = db.AddTrack(trackData)
+			if err != nil {
+				fmt.Printf("❌ DB error: %v\n", err)
 			}
+			// 📢 Shout to the WebSocket suckers!
+			ws.Broadcast(map[string]any{
+				"type": "TRACK_ADDED",
+				"state": map[string]any{
+					"track":    trackData,
+					"progress": fmt.Sprintf("%d/%d", i+1, len(urls)),
+				},
+			})
+
 		}
 	}(trackURLs)
 
