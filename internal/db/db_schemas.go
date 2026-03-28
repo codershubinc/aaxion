@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS episodes (
 );
 `
 var musicTableSchema = `
-CREATE TABLE IF NOT EXISTS music (
+CREATE TABLE IF NOT EXISTS tracks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     artist TEXT DEFAULT 'Unknown Artist',
