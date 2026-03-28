@@ -81,3 +81,18 @@ CREATE TABLE IF NOT EXISTS episodes (
 	UNIQUE(series_id, season_number, episode_number) -- Prevent duplicate episodes
 );
 `
+var musicTableSchema = `
+CREATE TABLE IF NOT EXISTS music (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    artist TEXT DEFAULT 'Unknown Artist',
+    album TEXT DEFAULT 'Aaxion Music', 
+    duration REAL,
+    release_year INTEGER,
+    file_path TEXT NOT NULL,
+    image_path TEXT,
+    size INTEGER,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(file_path)
+);
+`
