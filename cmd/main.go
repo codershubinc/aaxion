@@ -4,6 +4,7 @@ import (
 	"aaxion/internal/api"
 	"aaxion/internal/db"
 	"aaxion/internal/discovery"
+	"aaxion/internal/ws"
 	"fmt"
 	"log"
 	"net"
@@ -30,12 +31,12 @@ func startServer() {
 	port := 8080
 	fmt.Println("Starting server...")
 	api.RegisterRoutes()
+	api.AddMusicRoutes()
+	wsInit()
 
-	// Start mDNS discovery service
 	discovery.StartDiscoveryService(port)
 	log.Println("mDNS discovery service started at port", port)
 
-	// Wrap the default mux with CORS middleware
 	handler := corsMiddleware(http.DefaultServeMux)
 
 	log.Printf("Listening on :%d", port)
@@ -44,6 +45,8 @@ func startServer() {
 		log.Fatal("ListenAndServe: ", err)
 	}
 }
+
+// i know this is a very bad way to handle CORS,  and bloated here i will fix  this later. 🥲
 
 func corsMiddleware(next http.Handler) http.Handler {
 	// Get all local IPs
@@ -112,4 +115,8 @@ func GetAllLocalIPs() ([]string, error) {
 		}
 	}
 	return ips, nil
+}
+
+func wsInit() {
+	http.HandleFunc("/ws", ws.Handler)
 }

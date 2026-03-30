@@ -12,6 +12,7 @@ require (
 
 require (
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/miekg/dns v1.1.27 // indirect
 	golang.org/x/sys v0.40.0 // indirect
 )
