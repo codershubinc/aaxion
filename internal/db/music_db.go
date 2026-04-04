@@ -3,8 +3,8 @@ package db
 import "aaxion/internal/models"
 
 func AddTrack(t models.Track) error {
-	query := `INSERT INTO tracks (title, artist, album, duration, yt_uri ,  release_year, file_path, image_path, size) 
-VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+	query := `INSERT INTO tracks (title, artist, album, duration, yt_uri ,release_year, file_path, image_path, size) 
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
 	_, err := GetDB().Exec(query, t.Title, t.Artist, t.Album, t.Duration, t.YtUri, t.ReleaseYear, t.FilePath, t.ImagePath, t.Size)
 	return err
 }

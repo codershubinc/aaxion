@@ -49,6 +49,7 @@ func AddTrackApi(w http.ResponseWriter, r *http.Request) {
 	go func(urls []string) {
 		for i, u := range urls {
 			exactPath, err := DownloadYouTubeAudio(u, DIR)
+
 			if err != nil {
 				fmt.Printf("❌ Skip error: %v\n", err)
 				ws.Broadcast(map[string]any{
@@ -62,6 +63,7 @@ func AddTrackApi(w http.ResponseWriter, r *http.Request) {
 			}
 
 			trackData, err := ExtractYouTubeMetadata(exactPath)
+			fmt.Println("yt meta ", trackData)
 			if err != nil {
 				fmt.Printf("❌ Metadata error: %v\n", err)
 				continue
