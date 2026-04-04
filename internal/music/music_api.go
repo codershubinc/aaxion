@@ -66,7 +66,11 @@ func AddTrackApi(w http.ResponseWriter, r *http.Request) {
 				fmt.Printf("❌ Metadata error: %v\n", err)
 				continue
 			}
-			err = db.AddTrack(trackData)
+			if trackData.YtUri == "" {
+				trackData.YtUri = u
+			}
+			t := trackData
+			err = db.AddTrack(t)
 			if err != nil {
 				fmt.Printf("❌ DB error: %v\n", err)
 			}
