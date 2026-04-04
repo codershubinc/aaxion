@@ -60,6 +60,7 @@ func ExtractYouTubeMetadata(path string) (track models.Track, err error) {
 		Uploader    string  `json:"uploader"`
 		Album       string  `json:"album"`
 		Duration    float64 `json:"duration"`
+		YtUri       string  `json:"webpage_url"`
 		ReleaseYear float64 `json:"release_year"`
 	}
 
@@ -95,6 +96,7 @@ func ExtractYouTubeMetadata(path string) (track models.Track, err error) {
 		Artist:      artist,
 		Album:       album,
 		Duration:    info.Duration,
+		YtUri:       info.YtUri,
 		ReleaseYear: int(info.ReleaseYear),
 		FilePath:    path,
 		ImagePath:   imagePath,
