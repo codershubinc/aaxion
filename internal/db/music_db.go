@@ -10,7 +10,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 }
 
 func GetAllTracks() ([]models.Track, error) {
-	query := `SELECT id, title, artist, album, duration, yt_uri, release_year, file_path, COALESCE(image_path, '') as image_path, size, created_at FROM tracks`
+	query := `SELECT id, title, artist, album, duration, COALESCE(yt_uri, '') as yt_uri, release_year, file_path, COALESCE(image_path, '') as image_path, size, created_at FROM tracks`
 	rows, err := GetDB().Query(query)
 	if err != nil {
 		return nil, err
@@ -30,14 +30,14 @@ func GetAllTracks() ([]models.Track, error) {
 }
 
 func GetTrackByID(id int64) (models.Track, error) {
-	query := `SELECT id, title, artist, album, duration, yt_uri, release_year, file_path, COALESCE(image_path, '') as 	image_path, size, created_at FROM tracks WHERE id = ?`
+	query := `SELECT id, title, artist, album, duration, COALESCE(yt_uri, '') as yt_uri, release_year, file_path, COALESCE(image_path, '') as image_path, size, created_at FROM tracks WHERE id = ?`
 	var t models.Track
 	err := GetDB().QueryRow(query, id).Scan(&t.ID, &t.Title, &t.Artist, &t.Album, &t.Duration, &t.YtUri, &t.ReleaseYear, &t.FilePath, &t.ImagePath, &t.Size, &t.CreatedAt)
 	return t, err
 }
 
 func SearchTracksByTitle(title string) ([]models.Track, error) {
-	query := `SELECT id, title, artist, album, duration, release_year, file_path, COALESCE(image_path, '') as image_path, size, created_at FROM tracks WHERE title LIKE ?`
+	query := `SELECT id, title, artist, album, duration, COALESCE(yt_uri, '') as yt_uri, release_year, file_path, COALESCE(image_path, '') as image_path, size, created_at FROM tracks WHERE title LIKE ?`
 	rows, err := GetDB().Query(query, "%"+title+"%")
 	if err != nil {
 		return nil, err
