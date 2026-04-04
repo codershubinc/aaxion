@@ -12,6 +12,7 @@ type Track struct {
 	Duration    float64   `json:"duration" db:"duration"`
 	ReleaseYear int       `json:"releaseYear" db:"release_year"`
 	FilePath    string    `json:"filePath" db:"file_path"`
+	YtUri       string    `json:"ytUri" db:"yt_uri"`
 	ImagePath   string    `json:"imagePath" db:"image_path"`
 	Size        int64     `json:"size" db:"size"`
 	CreatedAt   time.Time `json:"createdAt" db:"created_at"`

@@ -88,6 +88,7 @@ CREATE TABLE IF NOT EXISTS tracks (
     artist TEXT DEFAULT 'Unknown Artist',
     album TEXT DEFAULT 'Aaxion Music', 
     duration REAL,
+	yt_uri TEXT,
     release_year INTEGER,
     file_path TEXT NOT NULL,
     image_path TEXT,

@@ -2,6 +2,7 @@ package music
 
 import (
 	"aaxion/internal/db"
+	"aaxion/internal/models"
 	"aaxion/internal/ws"
 	"encoding/json"
 	"fmt"
@@ -153,4 +154,27 @@ func GetTrackByIDApi(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(track)
+}
+
+func UpdateTrackApi(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var trackData models.Track
+	err := json.NewDecoder(r.Body).Decode(&trackData)
+	if err != nil {
+		http.Error(w, "Invalid JSON body: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	updatedTrack, err := db.UpdateTrack(trackData)
+	if err != nil {
+		http.Error(w, "Failed to update track: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(updatedTrack)
 }
