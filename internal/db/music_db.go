@@ -3,14 +3,14 @@ package db
 import "aaxion/internal/models"
 
 func AddTrack(t models.Track) error {
-	query := `INSERT INTO tracks (title, artist, album, duration, release_year, file_path, image_path, size) 
-VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-	_, err := GetDB().Exec(query, t.Title, t.Artist, t.Album, t.Duration, t.ReleaseYear, t.FilePath, t.ImagePath, t.Size)
+	query := `INSERT INTO tracks (title, artist, album, duration, yt_uri ,release_year, file_path, image_path, size) 
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	_, err := GetDB().Exec(query, t.Title, t.Artist, t.Album, t.Duration, t.YtUri, t.ReleaseYear, t.FilePath, t.ImagePath, t.Size)
 	return err
 }
 
 func GetAllTracks() ([]models.Track, error) {
-	query := `SELECT id, title, artist, album, duration, release_year, file_path, COALESCE(image_path, '') as image_path, size, created_at FROM tracks`
+	query := `SELECT id, title, artist, album, duration, COALESCE(yt_uri, '') as yt_uri, release_year, file_path, COALESCE(image_path, '') as image_path, size, created_at FROM tracks`
 	rows, err := GetDB().Query(query)
 	if err != nil {
 		return nil, err
@@ -20,7 +20,7 @@ func GetAllTracks() ([]models.Track, error) {
 	var tracks []models.Track
 	for rows.Next() {
 		var t models.Track
-		err := rows.Scan(&t.ID, &t.Title, &t.Artist, &t.Album, &t.Duration, &t.ReleaseYear, &t.FilePath, &t.ImagePath, &t.Size, &t.CreatedAt)
+		err := rows.Scan(&t.ID, &t.Title, &t.Artist, &t.Album, &t.Duration, &t.YtUri, &t.ReleaseYear, &t.FilePath, &t.ImagePath, &t.Size, &t.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -30,14 +30,14 @@ func GetAllTracks() ([]models.Track, error) {
 }
 
 func GetTrackByID(id int64) (models.Track, error) {
-	query := `SELECT id, title, artist, album, duration, release_year, file_path, COALESCE(image_path, '') as 	image_path, size, created_at FROM tracks WHERE id = ?`
+	query := `SELECT id, title, artist, album, duration, COALESCE(yt_uri, '') as yt_uri, release_year, file_path, COALESCE(image_path, '') as image_path, size, created_at FROM tracks WHERE id = ?`
 	var t models.Track
-	err := GetDB().QueryRow(query, id).Scan(&t.ID, &t.Title, &t.Artist, &t.Album, &t.Duration, &t.ReleaseYear, &t.FilePath, &t.ImagePath, &t.Size, &t.CreatedAt)
+	err := GetDB().QueryRow(query, id).Scan(&t.ID, &t.Title, &t.Artist, &t.Album, &t.Duration, &t.YtUri, &t.ReleaseYear, &t.FilePath, &t.ImagePath, &t.Size, &t.CreatedAt)
 	return t, err
 }
 
 func SearchTracksByTitle(title string) ([]models.Track, error) {
-	query := `SELECT id, title, artist, album, duration, release_year, file_path, COALESCE(image_path, '') as image_path, size, created_at FROM tracks WHERE title LIKE ?`
+	query := `SELECT id, title, artist, album, duration, COALESCE(yt_uri, '') as yt_uri, release_year, file_path, COALESCE(image_path, '') as image_path, size, created_at FROM tracks WHERE title LIKE ?`
 	rows, err := GetDB().Query(query, "%"+title+"%")
 	if err != nil {
 		return nil, err
@@ -47,11 +47,20 @@ func SearchTracksByTitle(title string) ([]models.Track, error) {
 	var tracks []models.Track
 	for rows.Next() {
 		var t models.Track
-		err := rows.Scan(&t.ID, &t.Title, &t.Artist, &t.Album, &t.Duration, &t.ReleaseYear, &t.FilePath, &t.ImagePath, &t.Size, &t.CreatedAt)
+		err := rows.Scan(&t.ID, &t.Title, &t.Artist, &t.Album, &t.Duration, &t.YtUri, &t.ReleaseYear, &t.FilePath, &t.ImagePath, &t.Size, &t.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
 		tracks = append(tracks, t)
 	}
 	return tracks, nil
+}
+
+func UpdateTrack(t models.Track) (models.Track, error) {
+	query := `UPDATE tracks SET title = ?, artist = ?, album = ?, duration = ?, yt_uri = ?, release_year = ?, file_path = ?, image_path = ?, size = ? WHERE id = ?`
+	_, err := GetDB().Exec(query, t.Title, t.Artist, t.Album, t.Duration, t.YtUri, t.ReleaseYear, t.FilePath, t.ImagePath, t.Size, t.ID)
+	if err != nil {
+		return t, err
+	}
+	return t, nil
 }

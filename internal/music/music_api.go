@@ -2,6 +2,7 @@ package music
 
 import (
 	"aaxion/internal/db"
+	"aaxion/internal/models"
 	"aaxion/internal/ws"
 	"encoding/json"
 	"fmt"
@@ -48,6 +49,7 @@ func AddTrackApi(w http.ResponseWriter, r *http.Request) {
 	go func(urls []string) {
 		for i, u := range urls {
 			exactPath, err := DownloadYouTubeAudio(u, DIR)
+
 			if err != nil {
 				fmt.Printf("❌ Skip error: %v\n", err)
 				ws.Broadcast(map[string]any{
@@ -61,11 +63,16 @@ func AddTrackApi(w http.ResponseWriter, r *http.Request) {
 			}
 
 			trackData, err := ExtractYouTubeMetadata(exactPath)
+			fmt.Println("yt meta ", trackData)
 			if err != nil {
 				fmt.Printf("❌ Metadata error: %v\n", err)
 				continue
 			}
-			err = db.AddTrack(trackData)
+			if trackData.YtUri == "" {
+				trackData.YtUri = u
+			}
+			t := trackData
+			err = db.AddTrack(t)
 			if err != nil {
 				fmt.Printf("❌ DB error: %v\n", err)
 			}
@@ -153,4 +160,27 @@ func GetTrackByIDApi(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(track)
+}
+
+func UpdateTrackApi(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var trackData models.Track
+	err := json.NewDecoder(r.Body).Decode(&trackData)
+	if err != nil {
+		http.Error(w, "Invalid JSON body: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	updatedTrack, err := db.UpdateTrack(trackData)
+	if err != nil {
+		http.Error(w, "Failed to update track: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(updatedTrack)
 }
