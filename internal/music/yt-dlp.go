@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/url"
 	"os"
 	"os/exec"
@@ -13,6 +14,7 @@ import (
 )
 
 func DownloadYouTubeAudio(url, musicDir string) (filePath string, err error) {
+	id, _ := GetIdFromYouTubeURL(url)
 	args := []string{
 		"--extract-audio",
 		"--audio-format", "mp3",
@@ -23,8 +25,8 @@ func DownloadYouTubeAudio(url, musicDir string) (filePath string, err error) {
 		"--add-metadata",
 		"--write-info-json",
 		"--print", "after_move:filepath",
-		"--progress",
-		"--output", filepath.Join(musicDir, "%(title)s.%(ext)s"),
+		"--no-progress",
+		"--output", filepath.Join(musicDir, id),
 		url,
 	}
 	cmd := exec.Command("yt-dlp", args...)
@@ -38,7 +40,9 @@ func DownloadYouTubeAudio(url, musicDir string) (filePath string, err error) {
 		return "", err
 	}
 
-	filePath = strings.TrimSpace(outBuf.String())
+	cleanedOutput := strings.ReplaceAll(outBuf.String(), "\r", "\n")
+	lines := strings.Split(strings.TrimSpace(cleanedOutput), "\n")
+	filePath = strings.TrimSpace(lines[len(lines)-1])
 
 	return filePath, nil
 }
@@ -65,9 +69,9 @@ func ExtractYouTubeMetadata(path string) (track models.Track, err error) {
 	}
 
 	if err := json.Unmarshal(fileData, &info); err != nil {
+		log.Println("Got err while unmarshaling json", err)
 		return models.Track{}, fmt.Errorf("failed to parse metadata: %v", err)
 	}
-
 	artist := info.Artist
 	if artist == "" {
 		artist = info.Uploader
@@ -83,7 +87,7 @@ func ExtractYouTubeMetadata(path string) (track models.Track, err error) {
 
 	title := info.Title
 	if title == "" {
-		title = filepath.Base(baseName)
+		title = "Unknown Title"
 	}
 
 	var fileSize int64 = 0
@@ -118,7 +122,6 @@ func ManageDownloadYoutubePlaylist(url string) ([]string, error) {
 	if err := cmd.Run(); err != nil {
 		return nil, fmt.Errorf("failed to scout URL: %v", err)
 	}
-
 	var data models.YTDLPPlaylist
 	if err := json.Unmarshal(outBuf.Bytes(), &data); err != nil {
 		return nil, fmt.Errorf("failed to parse scout data: %v", err)
@@ -154,4 +157,18 @@ func CleanYouTubeURL(rawURI string) (uri string, typeOfUri string) {
 	}
 
 	return rawURI, "unknown"
+}
+
+func GetIdFromYouTubeURL(rawURI string) (id string, typeOfUri string) {
+	parsedURL, err := url.Parse(rawURI)
+	if err != nil {
+		return "", "unknown"
+	}
+
+	query := parsedURL.Query()
+
+	if videoID := query.Get("v"); videoID != "" {
+		return videoID, "video"
+	}
+	return "", "unknown"
 }

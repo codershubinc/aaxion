@@ -3,8 +3,10 @@
 uploads/
 /uploads
 /upload
-/uploads_temp
-index.html
+/uploads_temp 
+
+# temp testing web files
+/.web
 
 # Installer & Distribution Files
 setup/linux-installer/
