@@ -3,6 +3,7 @@ package music
 import (
 	"aaxion/internal/db"
 	"aaxion/internal/models"
+	"aaxion/internal/utils"
 	"aaxion/internal/ws"
 	"encoding/json"
 	"fmt"
@@ -18,13 +19,13 @@ type AddTrackResponse struct {
 
 func AddTrackApi(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		utils.WriteError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
 
 	rawURI := r.FormValue("uri")
 	if rawURI == "" {
-		http.Error(w, "Missing 'uri' parameter", http.StatusBadRequest)
+		utils.WriteError(w, http.StatusBadRequest, "Missing 'uri' parameter")
 		return
 	}
 
@@ -42,7 +43,7 @@ func AddTrackApi(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		http.Error(w, "Failed to process URI: "+err.Error(), http.StatusInternalServerError)
+		utils.WriteError(w, http.StatusInternalServerError, "Failed to process URI: "+err.Error())
 		return
 	}
 
@@ -88,99 +89,108 @@ func AddTrackApi(w http.ResponseWriter, r *http.Request) {
 		}
 	}(trackURLs)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusAccepted)
-	json.NewEncoder(w).Encode(AddTrackResponse{
+	err = utils.WriteJSON(w, http.StatusAccepted, AddTrackResponse{
 		Status:  "success",
 		Message: fmt.Sprintf("Queued %d tracks for download", len(trackURLs)),
 		Count:   len(trackURLs),
 	})
+	if err != nil {
+		return
+	}
 }
 
 func GetTracksApi(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		utils.WriteError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
 
 	tracks, err := db.GetAllTracks()
 	if err != nil {
-		http.Error(w, "Failed to get tracks: "+err.Error(), http.StatusInternalServerError)
+		utils.WriteError(w, http.StatusInternalServerError, "Failed to get tracks: "+err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(tracks)
+	err = utils.WriteJSON(w, http.StatusOK, tracks)
+	if err != nil {
+		return
+	}
 }
 
 func SearchTracksApi(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		utils.WriteError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
 	title := r.URL.Query().Get("title")
 	if title == "" {
-		http.Error(w, "Missing 'title' query parameter", http.StatusBadRequest)
+		utils.WriteError(w, http.StatusBadRequest, "Missing 'title' query parameter")
 		return
 	}
 
 	tracks, err := db.SearchTracksByTitle(title)
 	if err != nil {
-		http.Error(w, "Failed to search tracks: "+err.Error(), http.StatusInternalServerError)
+		utils.WriteError(w, http.StatusInternalServerError, "Failed to search tracks: "+err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(tracks)
+	err = utils.WriteJSON(w, http.StatusOK, tracks)
+	if err != nil {
+		return
+	}
 }
 
 func GetTrackByIDApi(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		utils.WriteError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
 
 	idStr := r.URL.Query().Get("id")
 	if idStr == "" {
-		http.Error(w, "Missing 'id' query parameter", http.StatusBadRequest)
+		utils.WriteError(w, http.StatusBadRequest, "Missing 'id' query parameter")
 		return
 	}
 
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		http.Error(w, "Invalid 'id' parameter: "+err.Error(), http.StatusBadRequest)
+		utils.WriteError(w, http.StatusBadRequest, "Invalid 'id' parameter: "+err.Error())
 		return
 	}
 
 	track, err := db.GetTrackByID(id)
 	if err != nil {
-		http.Error(w, "Failed to get track: "+err.Error(), http.StatusInternalServerError)
+		utils.WriteError(w, http.StatusInternalServerError, "Failed to get track: "+err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(track)
+	err = utils.WriteJSON(w, http.StatusOK, track)
+	if err != nil {
+		return
+	}
 }
 
 func UpdateTrackApi(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPut {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		utils.WriteError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
 
 	var trackData models.Track
 	err := json.NewDecoder(r.Body).Decode(&trackData)
 	if err != nil {
-		http.Error(w, "Invalid JSON body: "+err.Error(), http.StatusBadRequest)
+		utils.WriteError(w, http.StatusBadRequest, "Invalid JSON body: "+err.Error())
 		return
 	}
 
 	updatedTrack, err := db.UpdateTrack(trackData)
 	if err != nil {
-		http.Error(w, "Failed to update track: "+err.Error(), http.StatusInternalServerError)
+		utils.WriteError(w, http.StatusInternalServerError, "Failed to update track: "+err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(updatedTrack)
+	err = utils.WriteJSON(w, http.StatusOK, updatedTrack)
+	if err != nil {
+		return
+	}
 }

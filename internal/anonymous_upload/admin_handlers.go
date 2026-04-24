@@ -1,7 +1,7 @@
 package anonymous_upload
 
 import (
-	"encoding/json"
+	"aaxion/internal/utils"
 	"net/http"
 	"strconv"
 )
@@ -9,7 +9,7 @@ import (
 // GenerateTokenHandler creates a new upload token (requires auth)
 func GenerateTokenHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		_ = utils.WriteError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
 
@@ -46,20 +46,19 @@ func GenerateTokenHandler(w http.ResponseWriter, r *http.Request) {
 	// Generate token
 	token, err := GenerateUploadToken(targetDir, maxUploads, expiryHours, maxFileSize)
 	if err != nil {
-		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+		_ = utils.WriteError(w, http.StatusInternalServerError, "Failed to generate token")
 		return
 	}
 
 	// Build upload URL
 	uploadURL := r.Host + "/upload?token=" + token
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"token":        token,
-		"upload_url":   uploadURL,
-		"target_dir":   targetDir,
-		"max_uploads":  maxUploads,
-		"expiry_hours": expiryHours,
+	_ = utils.WriteJSON(w, http.StatusOK, map[string]interface{}{
+		"token":         token,
+		"upload_url":    uploadURL,
+		"target_dir":    targetDir,
+		"max_uploads":   maxUploads,
+		"expiry_hours":  expiryHours,
 		"max_file_size": maxFileSize,
 	})
 }
@@ -67,34 +66,32 @@ func GenerateTokenHandler(w http.ResponseWriter, r *http.Request) {
 // RevokeTokenHandler revokes a token (requires auth)
 func RevokeTokenHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		_ = utils.WriteError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
 
 	token := r.URL.Query().Get("token")
 	if token == "" {
-		http.Error(w, "Missing token", http.StatusBadRequest)
+		_ = utils.WriteError(w, http.StatusBadRequest, "Missing token")
 		return
 	}
 
 	err := RevokeToken(token)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		_ = utils.WriteError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
+	_ = utils.WriteJSON(w, http.StatusOK, map[string]string{
 		"message": "Token revoked successfully",
 	})
 }
 
 // ListTokensHandler lists all active tokens (requires auth)
-func ListTokensHandler(w http.ResponseWriter, r *http.Request) {
+func ListTokensHandler(w http.ResponseWriter, _ *http.Request) {
 	tokens := ListAllTokens()
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	_ = utils.WriteJSON(w, http.StatusOK, map[string]interface{}{
 		"tokens": tokens,
 		"count":  len(tokens),
 	})
@@ -104,16 +101,15 @@ func ListTokensHandler(w http.ResponseWriter, r *http.Request) {
 func GetTokenInfoHandler(w http.ResponseWriter, r *http.Request) {
 	token := r.URL.Query().Get("token")
 	if token == "" {
-		http.Error(w, "Missing token", http.StatusBadRequest)
+		_ = utils.WriteError(w, http.StatusBadRequest, "Missing token")
 		return
 	}
 
 	tokenInfo, err := GetTokenInfo(token)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		_ = utils.WriteError(w, http.StatusNotFound, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(tokenInfo)
+	_ = utils.WriteJSON(w, http.StatusOK, tokenInfo)
 }
