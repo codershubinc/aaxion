@@ -39,17 +39,18 @@ func RecordPlay(trackId int, userId int, playedAt string) {
 // SetFavorite toggles or explicitly sets the favorite status.
 func SetFavorite(trackId int, userId int, isFavorite bool) error {
 	if isFavorite {
-		query := "INSERT OR IGNORE INTO favorite_tracks (track_id) VALUES ( ?)"
-		_, err := GetDB().Exec(query, trackId)
+		query := "INSERT OR IGNORE INTO favorite_tracks (user_id, track_id) VALUES (?, ?)"
+		_, err := GetDB().Exec(query, userId, trackId)
 		if err != nil {
 			log.Println("Got err adding favorite", err)
 			return err
 		}
 	} else {
-		query := "DELETE FROM favorite_tracks WHERE  track_id = ?"
+		query := "DELETE FROM favorite_tracks WHERE user_id = ? AND track_id = ?"
 		_, err := GetDB().Exec(query, userId, trackId)
 		if err != nil {
 			log.Println("Got err removing favorite", err)
+			return err
 		}
 
 	}
