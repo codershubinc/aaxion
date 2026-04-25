@@ -74,7 +74,11 @@ func SetFavoriteApi(w http.ResponseWriter, r *http.Request) {
 	isFavorite := isFavoriteStr == "true" || isFavoriteStr == "1"
 	userId := getUserId(r)
 
-	db.SetFavorite(trackId, userId, isFavorite)
+	err = db.SetFavorite(trackId, userId, isFavorite)
+	if err != nil {
+		_ = utils.WriteError(w, http.StatusInternalServerError, "Failed to update favorite status: "+err.Error())
+		return
+	}
 
 	_ = utils.WriteJSON(w, http.StatusOK, map[string]string{
 		"status":  "success",
@@ -164,4 +168,3 @@ func GetLastPlayedApi(w http.ResponseWriter, r *http.Request) {
 
 	_ = utils.WriteJSON(w, http.StatusOK, state)
 }
-
