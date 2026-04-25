@@ -97,3 +97,39 @@ CREATE TABLE IF NOT EXISTS tracks (
     UNIQUE(file_path)
 );
 `
+var favoriteTracksTableSchema = `
+CREATE TABLE IF NOT EXISTS favorite_tracks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    track_id INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id),
+    FOREIGN KEY(track_id) REFERENCES tracks(id) ON DELETE CASCADE,
+    UNIQUE(user_id, track_id)
+);
+`
+
+var playStatesTableSchema = `
+CREATE TABLE IF NOT EXISTS play_states (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    track_id INTEGER NOT NULL,
+    play_count INTEGER DEFAULT 0,
+    last_played_at DATETIME,
+    FOREIGN KEY(user_id) REFERENCES users(id),
+    FOREIGN KEY(track_id) REFERENCES tracks(id) ON DELETE CASCADE,
+    UNIQUE(user_id, track_id)
+);
+`
+
+var lastPlayedTableSchema = `
+CREATE TABLE IF NOT EXISTS last_played_tracks (
+    user_id INTEGER PRIMARY KEY, -- Enforce one row per user
+    track_id INTEGER NOT NULL,
+    played_at DATETIME,
+    FOREIGN KEY(user_id) REFERENCES users(id),
+    FOREIGN KEY(track_id) REFERENCES tracks(id) ON DELETE CASCADE
+);
+`
+
+

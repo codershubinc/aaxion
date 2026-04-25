@@ -43,6 +43,9 @@ func InitDb() error {
 		episodesTableSchema,
 		discoveryDevices,
 		musicTableSchema,
+		favoriteTracksTableSchema,
+		playStatesTableSchema,
+		lastPlayedTableSchema,
 	}
 
 	for _, schema := range schemas {
