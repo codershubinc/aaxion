@@ -42,7 +42,7 @@ func StartDiscoveryService(port int) {
 		var err error
 		maxRetries := 10
 
-		for i := 0; i < maxRetries; i++ {
+		for i := range maxRetries {
 			server, err = zeroconf.Register(
 				instanceName,
 				"_aaxion._tcp",
