@@ -3,7 +3,6 @@ package streamer
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -51,11 +50,8 @@ func StreamFileRange(w http.ResponseWriter, r *http.Request, filePath string, mi
 	rangeHeader := r.Header.Get("Range")
 
 	if rangeHeader == "" {
-		// Optional: You might want to default to sending the first chunk
-		// instead of an error if you want to support direct downloads/playback without headers,
-		// but keeping your current logic is fine too.
-		log.Println("No range headers")
-		http.Error(w, "Range header required", http.StatusBadRequest)
+		w.Header().Set("Content-Type", mimeType)
+		http.ServeFile(w, r, filePath)
 		return
 	}
 	// log.Println("Range headers found", rangeHeader)

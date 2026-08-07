@@ -13,8 +13,9 @@ type Credentials struct {
 }
 
 type AuthResponse struct {
-	Token      string               `json:"token"`
-	DeviceInfo discovery.DeviceInfo `json:"device_info"`
+	Token       string               `json:"token"`
+	AccessToken string               `json:"access_token"`
+	DeviceInfo  discovery.DeviceInfo `json:"device_info"`
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +66,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := db.AuthenticateUser(creds.Username, creds.Password)
+	token, accessToken, err := db.AuthenticateUser(creds.Username, creds.Password)
 	if err != nil {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
@@ -78,7 +79,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	json.NewEncoder(w).Encode(AuthResponse{Token: token, DeviceInfo: deviceInfo})
+	json.NewEncoder(w).Encode(AuthResponse{Token: token, AccessToken: accessToken, DeviceInfo: deviceInfo})
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {

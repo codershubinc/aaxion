@@ -10,6 +10,15 @@ CREATE TABLE IF NOT EXISTS tokens (
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 `
+var accessTokensTableSchema = `
+CREATE TABLE IF NOT EXISTS accessTokens (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	token TEXT NOT NULL UNIQUE,
+	token_type TEXT NOT NULL, 
+	expiry DATETIME NOT NULL,
+	created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+`
 
 var discoveryDevices = `
 CREATE TABLE IF NOT EXISTS discovery_devices (
@@ -131,5 +140,3 @@ CREATE TABLE IF NOT EXISTS last_played_tracks (
     FOREIGN KEY(track_id) REFERENCES tracks(id) ON DELETE CASCADE
 );
 `
-
-

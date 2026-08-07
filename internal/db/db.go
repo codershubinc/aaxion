@@ -46,6 +46,7 @@ func InitDb() error {
 		favoriteTracksTableSchema,
 		playStatesTableSchema,
 		lastPlayedTableSchema,
+		accessTokensTableSchema,
 	}
 
 	for _, schema := range schemas {

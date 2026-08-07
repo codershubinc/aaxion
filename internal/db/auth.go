@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"errors"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -20,36 +21,39 @@ func CreateUser(username, password string) error {
 	return err
 }
 
-func AuthenticateUser(username, password string) (string, error) {
+func AuthenticateUser(username, password string) (string, string, error) {
 	var user models.User
 	err := dbConn.QueryRow("SELECT id, password_hash FROM users WHERE username = ?", username).Scan(&user.ID, &user.PasswordHash)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return "", errors.New("invalid username or password")
+			return "", "", errors.New("invalid username or password")
 
 		}
-		return "", err
+		return "", "", err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
 	if err != nil {
-		return "", errors.New("invalid username or password")
+		return "", "", errors.New("invalid username or password")
 	}
 
 	// Create token
 	tokenBytes := make([]byte, 32)
 	_, err = rand.Read(tokenBytes)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	token := hex.EncodeToString(tokenBytes)
-
+	accessToken, err := CreateAccessToken("access", time.Now().Add(5*time.Hour))
+	if err != nil {
+		return "", "", err
+	}
 	_, err = dbConn.Exec("INSERT INTO auth_tokens (user_id, token) VALUES (?, ?)", user.ID, token)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return token, nil
+	return token, accessToken, nil
 }
 
 // VerifyCredentials checks username and password without creating a session token

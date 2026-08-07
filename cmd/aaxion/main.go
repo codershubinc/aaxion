@@ -54,16 +54,16 @@ func corsMiddleware(next http.Handler) http.Handler {
 	if err != nil {
 		fmt.Printf("Error getting local IPs: %v\n", err)
 	}
-	// Add common localhost variants
+	// Add common localhost and tunnel domain variants
 	localIPs = append(localIPs, "localhost", "127.0.0.1")
-	localIPs = append(localIPs, "aaxion-cdn.codershubinc.tech")
+	localIPs = append(localIPs, "aaxion-client.codershubinc.com", "aaxioncdn.codershubinc.com", "codershubinc.com", "aaxion-cdn.codershubinc.tech")
 
-	fmt.Printf("Allowing CORS for IPs: %v\n", localIPs)
+	fmt.Printf("Allowing CORS for IPs/Domains: %v\n", localIPs)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 
-		// Allow requests from any local IP
+		// Allow requests from any local IP or registered domain
 		if origin != "" {
 			for _, ip := range localIPs {
 				if strings.Contains(origin, ip) {
@@ -71,10 +71,17 @@ func corsMiddleware(next http.Handler) http.Handler {
 					break
 				}
 			}
+			// Fallback: If no header set yet but origin is provided, mirror origin to avoid CORS blockage
+			if w.Header().Get("Access-Control-Allow-Origin") == "" {
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+			}
+		} else {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
 		}
 
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, PROPFIND, PROPPATCH, MKCOL, COPY, MOVE, LOCK, UNLOCK")
-		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Depth, Destination, If, Overwrite, Timeout")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Depth, Destination, If, Overwrite, Timeout, Range")
+		w.Header().Set("Access-Control-Expose-Headers", "Content-Length, Content-Range, Accept-Ranges, Content-Type, Content-Disposition")
 
 		if strings.HasPrefix(r.URL.Path, "/webdav") {
 			next.ServeHTTP(w, r)

@@ -5,9 +5,11 @@ import (
 	"aaxion/internal/auth"
 	"aaxion/internal/files"
 	img "aaxion/internal/image"
+	"aaxion/internal/streamer"
 	"aaxion/internal/streamer/movies"
 	"aaxion/internal/streamer/series"
 	sys "aaxion/internal/system"
+	"aaxion/internal/tokens"
 	"aaxion/internal/webdav"
 	"net/http"
 )
@@ -37,6 +39,7 @@ func RegisterRoutes() {
 
 	// file download operations
 	http.HandleFunc("/files/download", auth.AuthMiddleware(files.DownloadFileApi))
+	http.HandleFunc("/files/stream", auth.AuthMiddleware(streamer.StreamFileByPathApi))
 	http.HandleFunc("/files/thumbnail", auth.AuthMiddleware(img.ServeThumbnail))
 	http.HandleFunc("/files/view-image", auth.AuthMiddleware(img.ViewImage))
 
@@ -71,7 +74,12 @@ func RegisterRoutes() {
 	http.HandleFunc("/api/series/episodes/add", auth.AuthMiddleware(series.AddEpisodeApi))
 
 	// Streamer operations
+	http.HandleFunc("/api/stream", auth.AuthMiddleware(streamer.StreamFileByPathApi))
 	http.HandleFunc("/api/stream/movie", auth.AuthMiddleware(movies.StreamMovieApi))
 	http.HandleFunc("/api/stream/episode", auth.AuthMiddleware(series.StreamEpisodeApi))
+
+	//Token handler
+	http.HandleFunc("/api/token/generate", auth.AuthMiddleware(tokens.CreateAccessToken))
+	http.HandleFunc("/api/token/remove", auth.AuthMiddleware(tokens.CleanAccessTokens))
 
 }
