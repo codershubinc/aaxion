@@ -28,6 +28,7 @@ func RegisterRoutes() {
 	// file management operations
 	http.HandleFunc("/api/files/view", auth.AuthMiddleware(files.ViewContent))
 	http.HandleFunc("/files/create-directory", auth.AuthMiddleware(files.CreateDirectory))
+	http.HandleFunc("/files/unzip", auth.AuthMiddleware(files.UnzipHandler))
 
 	// file upload  operations
 	http.HandleFunc("/files/upload", auth.AuthMiddleware(files.UploadFile))

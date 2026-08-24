@@ -26,8 +26,6 @@ func HandleStartChunkUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create a unique temporary folder for this specific file's chunks
-	// We use the filename as the folder name (in production, use a UUID)
 	tempFolderPath := filepath.Join(TempDir, filename)
 	if err := os.MkdirAll(tempFolderPath, 0755); err != nil {
 		http.Error(w, "Failed to create temp storage", http.StatusInternalServerError)
