@@ -20,7 +20,7 @@ BOLD=$(printf '\033[1m')
 NC=$(printf '\033[0m')
 
 # --- Helper Functions ---
-step() { echo "${CYAN}${BOLD}[$1/4]${NC} $2"; }
+step() { echo "${CYAN}${BOLD}[Step $1]${NC} $2"; }
 success() { echo "      ${GREEN}✔${NC} $1"; }
 info() { echo "      ${BLUE}ℹ${NC} $1"; }
 warn() { echo "      ${YELLOW}⚠${NC} $1"; }
@@ -38,8 +38,28 @@ echo "${BLUE}${BOLD}=======================================${NC}"
 echo ""
 
 # --- Pre-flight Checks ---
-command -v curl >/dev/null 2>&1 || error "'curl' is required but not installed."
+command -v curl>/dev/null 2>&1 || error "'curl' is required but not installed."
 command -v grep >/dev/null 2>&1 || error "'grep' is required but not installed."
+
+# --- Check for Existing Installation ---
+if [ -f "$INSTALL_DIR/$FINAL_NAME" ] || command -v $FINAL_NAME >/dev/null 2>&1; then
+    info "${BOLD}${FINAL_NAME}${NC} is already installed on this system."
+    printf "      ${YELLOW}⚠${NC} Do you want to update/overwrite it? [y/N]: "
+    
+    # Read directly from the terminal (tty) to prevent issues when piped via curl
+    read -r update_choice < /dev/tty
+    
+    case "$update_choice" in
+        [yY][eE][sS]|[yY])
+            info "Proceeding with update..."
+            echo ""
+            ;;
+        *)
+            success "Installation aborted. Keeping existing version."
+            exit 0
+            ;;
+    esac
+fi
 
 # 1. Fetch Latest Version
 step "1" "Fetching latest version info..."
