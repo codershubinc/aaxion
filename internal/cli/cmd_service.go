@@ -58,6 +58,13 @@ func installService() {
 		user = "root"
 	}
 
+	// Look up the user's home directory to use as the working directory.
+	// We need this so it doesn't try to create .aaxion.db in the root / folder.
+	homeDir := "/root"
+	if user != "root" {
+		homeDir = "/home/" + user
+	}
+
 	serviceContent := fmt.Sprintf(`[Unit]
 Description=Aaxion File Streaming Server
 After=network.target
@@ -65,13 +72,14 @@ After=network.target
 [Service]
 Type=simple
 User=%s
+WorkingDirectory=%s
 ExecStart=%s serve
 Restart=on-failure
 RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
-`, user, execPath)
+`, user, homeDir, execPath)
 
 	servicePath := "/etc/systemd/system/aaxion.service"
 	err = os.WriteFile(servicePath, []byte(serviceContent), 0644)
