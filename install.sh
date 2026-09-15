@@ -93,6 +93,14 @@ fi
 success "Successfully installed ${FINAL_NAME}."
 echo ""
 
+# 5. Setup Daemon (Linux Only)
+if [ "$OS" = "linux" ] && command -v systemctl >/dev/null 2>&1; then
+    step "5" "Configuring background daemon..."
+    warn "Sudo privileges may be required to enable the systemd service"
+    sudo $INSTALL_DIR/$FINAL_NAME service install || warn "Failed to configure daemon automatically."
+    echo ""
+fi
+
 # --- Final Check ---
 if command -v $FINAL_NAME >/dev/null 2>&1; then
     echo "${GREEN}${BOLD}🎉 Installation successful!${NC}"

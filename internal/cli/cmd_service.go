@@ -84,9 +84,11 @@ WantedBy=multi-user.target
 	
 	runCommand("systemctl", "daemon-reload")
 	runCommand("systemctl", "enable", "aaxion.service")
-	fmt.Println("✅ Aaxion service enabled to start on boot.")
-	fmt.Println("\nTo start the service now in the background, run:")
-	fmt.Println("   sudo aax service start")
+	runCommand("systemctl", "start", "aaxion.service")
+	
+	fmt.Println("✅ Aaxion background daemon is now running and enabled on boot.")
+	fmt.Println("\nTo check the status of the server, run:")
+	fmt.Println("   aax service status")
 }
 
 func uninstallService() {
