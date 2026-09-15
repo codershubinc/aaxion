@@ -94,3 +94,13 @@ func HasUsers() (bool, error) {
 	}
 	return count > 0, nil
 }
+
+func DeleteAllUsers() error {
+	_, err := dbConn.Exec("DELETE FROM users")
+	if err != nil {
+		return err
+	}
+	// Also wipe active sessions when resetting admin
+	_, err = dbConn.Exec("DELETE FROM auth_tokens")
+	return err
+}
