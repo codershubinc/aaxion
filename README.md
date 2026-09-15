@@ -17,17 +17,20 @@
 
 ## 📥 Installation
 
-1.  **Download:** Check the [latest release](https://github.com/codershubinc/aaxion/releases) and get the binary for your OS.
-2.  **Permissions:**
-    - **Linux:** `chmod +x aaxion-linux-amd64`
-    - **Windows:** No action needed for `aaxion-windows-amd64.exe`
-3.  **Run:**
-    ```bash
-    ./aaxion-linux-amd64
-    # or
-    ./aaxion-windows-amd64.exe
-    ```
-4.  **Enjoy:** The server starts on port `8080` by default.
+Aaxion is distributed as a single binary. Run this command on your Linux or macOS server to instantly install the latest release:
+
+```bash
+curl -fsSL https://aaxion.codershubinc.com/install.sh | bash
+```
+
+Next, create an admin user and start the server:
+
+```bash
+aax create-admin user:pass
+aax serve
+```
+
+The server will start on port `8080`.
 
 ---
 

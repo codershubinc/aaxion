@@ -19,3 +19,12 @@ Thumbs.db
 temp
 
 main
+# Build output
+/build/
+aaxion-main
+aaxion
+
+# Next.js
+/website/.next/
+/website/out/
+/website/node_modules/

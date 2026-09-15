@@ -1,354 +1,162 @@
-# aaxion API — Quick Reference ⚡️
+# Aaxion API — Deep Reference ⚡️
 
-A concise, developer-friendly reference for the aaxion file-service API. Use the examples below to interact with a local server.
+A complete, developer-friendly reference for the Aaxion REST API (v1). All endpoints are prefixed with `/api/v1/`.
 
-Base URL (local): `http://localhost:8080/`
+Base URL (local): `http://localhost:8080/api/v1/`
 
 ---
 
 ## 🔐 Authentication
 
-Most endpoints require authentication. You must obtain a token and include it in the `Authorization` header.
+Most endpoints require authentication via a Bearer token. 
 
 **Header format:**
 `Authorization: Bearer <your_token>`
 
 **Special Case:**
-
-- `/files/thumbnail`: Supports passing the token via query parameter `?tkn=<token>` to allow loading images in `<img>` tags.
-
----
-
-## Quick examples
-
-- Create initial user (only if no users exist):
-
-  ```bash
-  curl -X POST -d '{"username":"your_user","password":"your_pass"}' "http://localhost:8080/auth/register"
-  ```
-
-- Login:
-
-  ```bash
-  curl -X POST -d '{"username":"your_user","password":"your_pass"}' "http://localhost:8080/auth/login"
-  ```
-
-- Logout:
-
-  ```bash
-  curl -H "Authorization: Bearer $TOKEN" -X POST "http://localhost:8080/auth/logout"
-  ```
-
-- View files:
-
-  ```bash
-  curl -H "Authorization: Bearer $TOKEN" "http://localhost:8080/files/view?dir=/home/swap/documents"
-  ```
-
-- Upload (single file):
-
-  ```bash
-  curl -H "Authorization: Bearer $TOKEN" -F "file=@/path/to/file" "http://localhost:8080/files/upload?dir=/home/swap/documents"
-  ```
+Endpoints like `/images/thumbnail`, `/files/download`, and streaming endpoints support passing the token via query parameter `?tkn=<token>` to allow loading in `<img>`, `<video>`, or `<a>` tags.
 
 ---
 
-## Endpoints
+## 👤 User & Auth Management
 
-### 👤 User Management
+### Register Admin
+**`POST /api/v1/auth/register`** (Public)
+- **Description:** Register the initial admin user. Fails if a user already exists.
+- **Request Body:** `{"username": "admin", "password": "mypassword"}`
+- **Response (201):** `{"message": "User created"}`
 
-#### Register (Initial Setup)
+### Login
+**`POST /api/v1/auth/login`** (Public)
+- **Description:** Authenticate and receive session tokens.
+- **Request Body:** `{"username": "admin", "password": "mypassword"}`
+- **Response (200):**
+  ```json
+  {
+    "token": "<session_token>",
+    "access_token": "<access_token>",
+    "device_info": { "id": "...", "name": "..." }
+  }
+  ```
 
-Endpoint:
-
-```http
-POST /auth/register
-```
-
-- Description: Register the first user. Fails if a user already exists.
-- Body: `{"username": "...", "password": "..."}`
-- Response: HTTP 201 Created.
-
-#### Login
-
-Endpoint:
-
-```http
-POST /auth/login
-```
-
-- Description: Authenticate and receive a session token.
-- Body: `{"username": "...", "password": "..."}`
-- Response: `{"token": "..."}`
-
-#### Logout
-
-Endpoint:
-
-```http
-POST /auth/logout
-```
-
-- Description: Invalidate the current session token.
-- Header: `Authorization: Bearer <token>`
+### Generate Access Token
+**`POST /api/v1/auth/token/generate`** (Auth Required)
+- **Description:** Generate a short-lived access token. Requires primary session token.
+- **Response (201):** `{"token": "<new_token>"}`
 
 ---
 
-### 📁 View Files and Folders
+## 📁 Files & Directories
 
-Endpoint:
-
-```http
-GET /files/view?dir={directory_path}
-```
-
-- **Requires Auth**: Yes
-- Description: Return the contents of a directory.
-- Parameters:
-  - `dir` (string, required): Path of the directory to list (must be inside the monitored root).
-- Response: JSON array of file/folder objects.
-- Example response:
-
+### View Directory
+**`GET /api/v1/files/view?dir={path}`** (Auth Required)
+- **Description:** List contents of a directory.
+- **Response (200):**
   ```json
   [
     {
-      "name": "Quazaar",
+      "name": "Documents",
       "is_dir": true,
       "size": 4096,
-      "path": "/home/swap/Github",
-      "raw_path": "/home/swap/Github/Quazaar"
+      "path": "/home/user",
+      "raw_path": "/home/user/Documents"
     }
   ]
   ```
 
-⚠️ Warning: `dir` must start within the monitored root (e.g., `/home/swap/`). Requests outside the root will be rejected with a "Suspicious path detected" error.
+### Unzip Archive
+**`POST /api/v1/files/unzip`** (Auth Required)
+- **Description:** Extract a ZIP archive.
+- **Request Body:** `{"zip_path": "/path/archive.zip", "dest_dir": "/path/out"}`
+- **Response (200):** `{"message": "Archive extracted successfully", "dest": "/path/out"}`
 
 ---
 
-### ✨ Create Directory
+## ⚙️ Chunked Uploads (Large Files)
 
-Endpoint:
+Requires Auth. For files larger than 100MB.
 
-```http
-POST /files/create-directory?path={directory_path}
-```
-
-- **Requires Auth**: Yes
-- Description: Create a new directory at the specified path.
-- Parameters:
-  - `path` (string, required): Target directory path (inside monitored root).
-- Success response: empty body with HTTP `201 Created`.
-
-Example:
-
-```bash
-curl -H "Authorization: Bearer $TOKEN" -X POST "http://localhost:8080/files/create-directory?path=/home/swap/new_folder"
-```
+1. **`POST /api/v1/files/upload/chunk/start?filename=big.zip`**
+   - **Response:** `Upload initialized`
+2. **`POST /api/v1/files/upload/chunk?filename=big.zip&chunk_index=0`**
+   - **Body:** Raw binary chunk. Keep under 90MB.
+   - **Response:** `Chunk received`
+3. **`POST /api/v1/files/upload/chunk/complete?filename=big.zip&dir=/dest`**
+   - **Response:** `File merged successfully`
 
 ---
 
-### 📤 Upload File (single request)
+## 🔗 Temporary Sharing & Anonymous
 
-Endpoint:
-
-```http
-POST /files/upload?dir={directory_path}
-```
-
-- **Requires Auth**: Yes
-- Description: Upload a file via multipart form-data.
-- Parameters:
-  - `dir` (string, required): Destination directory.
-  - Body: `multipart/form-data` with a `file` field.
-- Success: HTTP `201 Created`.
-
-Example:
-
-```bash
-curl -H "Authorization: Bearer $TOKEN" -F "file=@/tmp/example.txt" "http://localhost:8080/files/upload?dir=/home/swap/documents"
-```
-
----
-
-### ⚙️ Chunked Upload (for large files)
-
-All chunked upload endpoints require `Authorization: Bearer <token>`.
-
-1. Start session
-
-Endpoint:
-
-```http
-POST /files/upload/chunk/start?filename={filename}
-```
-
-- Description: Initialize a chunked upload session.
-- Query: `filename` (required).
-- Response: `Upload initialized` (or JSON with session info).
-
-Example:
-
-```bash
-curl -H "Authorization: Bearer $TOKEN" -X POST "http://localhost:8080/files/upload/chunk/start?filename=largeFile.zip"
-```
-
-2. Upload chunk
-
-Endpoint:
-
-```http
-POST /files/upload/chunk?filename={filename}&chunk_index={index}
-```
-
-- Description: Upload a single chunk. Body is raw binary (NOT multipart/form-data).
-- Query:
-  - `filename` (required)
-  - `chunk_index` (int, required) — start from `0` and increment by 1.
-- Note: Upload chunks in order. Keep chunks <= 90MB for reliability.
-
-Example:
-
-```bash
-curl -H "Authorization: Bearer $TOKEN" --data-binary @chunk0.bin "http://localhost:8080/files/upload/chunk?filename=largeFile.zip&chunk_index=0"
-```
-
-3. Complete upload
-
-Endpoint:
-
-```http
-POST /files/upload/chunk/complete?filename={filename}&dir={directory_path}
-```
-
-- Description: Merge uploaded chunks into the final file and save to `dir`.
-- Query: `filename`, `dir` (required).
-- Response: `File merged successfully`.
-
-Example:
-
-```bash
-curl -H "Authorization: Bearer $TOKEN" -X POST "http://localhost:8080/files/upload/chunk/complete?filename=largeFile.zip&dir=/home/swap/documents"
-```
-
----
-
-### 🔗 Temporary File Sharing
-
-Request a temporary link (server returns a token / short URL):
-
-Endpoint:
-
-```http
-GET /files/d/r?file_path={file_path}
-```
-
-- Description: Generate a one-time temporary link for a file.
-- Query: `file_path` (required).
-- Response: JSON object containing the share link and token.
-- Example response:
-
+### Generate Temp Link
+**`GET /api/v1/share/temp/request?file_path={path}`** (Auth Required)
+- **Response (200):**
   ```json
   {
-    "share_link": "/files/d/t/abcdefghijklmnopqrstuvwxyzABCDEF",
-    "token": "abcdefghijklmnopqrstuvwxyzABCDEF"
+    "share_link": "/api/v1/share/temp/abc...",
+    "token": "abc..."
   }
   ```
 
-Use the token URL to download:
+### Anonymous Upload Token Generation
+**`POST /api/v1/anonymous/token/generate?target_dir=/up&max_uploads=5`** (Auth Required)
+- **Response (200):**
+  ```json
+  {
+    "token": "abc123",
+    "upload_url": "<host>/upload?token=abc123",
+    "target_dir": "/up",
+    "max_uploads": 5,
+    "expiry_hours": 24,
+    "max_file_size": 11811160064
+  }
+  ```
 
-Endpoint:
-
-```http
-GET /files/d/t/{token}
-```
-
-- **Requires Auth**: No (Token acts as auth)
-- Description: Download the file referenced by the one-time token.
-- Note: Tokens are valid for one use only.
-
-Example:
-
-```bash
-curl -O "http://localhost:8080/files/d/t/abcdefghijklmnopqrstuvwxyzABCDEF"
-```
-
----
-
-### 🖼️ Images & Thumbnails
-
-#### View Full Image
-
-Endpoint:
-
-```http
-GET /files/view-image?path={file_path}
-```
-
-- **Requires Auth**: Yes
-- Description: Serve the raw image file directly.
-- Features:
-  - Supports client-side caching (7 days).
-  - Handles correct content-type automatically.
-- Query: `path` (string, required).
-
-Example:
-
-```bash
-curl -H "Authorization: Bearer $TOKEN" "http://localhost:8080/files/view-image?path=/home/swap/photos/vacation.jpg"
-```
-
-#### Get Thumbnail
-
-Endpoint:
-
-```http
-GET /files/thumbnail?path={file_path}
-```
-
-- **Requires Auth**: Yes (Header or Query Param)
-- Description: Get a resized (max 200px) JPEG thumbnail of an image.
-- Features: Server-side caching of generated thumbnails.
-- Query:
-  - `path` (string, required).
-  - `tkn` (string, optional): Auth token, for use in `<img>` tags.
-
-Example (Header):
-
-```bash
-curl -H "Authorization: Bearer $TOKEN" "http://localhost:8080/files/thumbnail?path=/home/swap/photos/vacation.jpg"
-```
-
-Example (Query Param):
-
-```bash
-curl "http://localhost:8080/files/thumbnail?path=/home/swap/photos/vacation.jpg&tkn=$TOKEN"
-```
+### Anonymous File Upload
+**`POST /api/v1/anonymous/upload?token=abc123`** (Public)
+- **Body:** `multipart/form-data` with `file`
+- **Response (201):** `{"message": "Upload successful", "uploads_remaining": 4}`
 
 ---
 
-### System Info
+## 🎵 Music
 
-Endpoint:
+### Add Music
+**`POST /api/v1/music/add?uri={youtube_url}`** (Public)
+- **Description:** Download music via yt-dlp. URI passed via form value or query.
+- **Response (202):** `{"status": "success", "message": "Queued 1 tracks", "count": 1}`
 
-```http
-GET /api/system/get-root-path
-```
+### Stream Music
+**`GET /api/v1/music/stream?id=1`** (Public)
+- **Response:** `<binary audio stream>`
 
-- **Requires Auth**: Yes
-- Description: Retrieve the monitored root directory path.
-- Response: JSON object with `root_path` field.
-  Example response:
-
-```json
-{
-  "root_path": "/home/swap"
-}
-```
-
-## Notes & best practices
-
-- All paths must be under the monitored root (e.g., `/home/swap/*`).
-- Ensure filesystem permissions allow the server process to read/write the target locations.
-- For large uploads prefer the chunked flow; keep chunks <= 90MB.
+### Music Stats
+**`POST /api/v1/music/stats/play?track_id=1`** (Public)
+**`POST /api/v1/music/stats/favorite?track_id=1&is_favorite=true`** (Public)
 
 ---
+
+## 💻 System
+
+### System Storage
+**`GET /api/v1/system/storage`** (Auth Required)
+- **Response (200):**
+  ```json
+  {
+    "total": 512000000000,
+    "used": 256000000000,
+    "available": 256000000000,
+    "usage_percentage": 50.0,
+    "external_devices": [
+      {
+        "device": "/dev/sdb1",
+        "mount_point": "/media/drive",
+        "filesystem_type": "ext4",
+        "total": 64000000000,
+        "used": 32000000000,
+        "available": 32000000000,
+        "usage_percentage": 50.0
+      }
+    ]
+  }
+  ```

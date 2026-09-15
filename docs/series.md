@@ -1,187 +1,112 @@
-# Series API Reference 🎬
+# Aaxion Series & Movies API Reference 🎬
 
-Documentation for the Series and Episodes management API endpoints.
+*(Note: These endpoints are legacy and not actively developed, but are still present in v0.0.1-beta)*
 
-Base URL (local): `http://localhost:8080/`
-
----
-
-## 🔐 Authentication
-
-All endpoints require authentication (except where noted otherwise for testing/token scenarios).
-Include the `Authorization` header:
-
-```
-Authorization: Bearer <your_token>
-```
+Base URL: `http://localhost:8080/api/v1/`
 
 ---
 
-## 📺 Series Management
+## 🎥 Movies
 
-### List All Series
+### List Movies
+**`GET /api/v1/movies`** (Auth Required)
+- **Response:**
+  ```json
+  [
+    {
+      "id": 1,
+      "title": "Interstellar",
+      "file_path": "/path/to/movie.mp4",
+      "file_id": 10,
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  ]
+  ```
 
-Endpoint:
-
-```http
-GET /api/series/list
-```
-
-- **Requires Auth**: Yes
-- **Description**: Returns a list of all available series.
-- **Response**: JSON array of series objects.
-
-Example Response:
-
-```json
-[
+### Add Movie
+**`POST /api/v1/movies/add`** (Auth Required)
+- **Request Body:**
+  ```json
   {
-    "id": 1,
-    "title": "Breaking Bad",
-    "description": "A high school chemistry teacher turned methamphetamine producer.",
-    "created_at": "2023-10-27T10:00:00Z"
+    "title": "Interstellar",
+    "file_path": "/path/to/movie.mp4",
+    "description": "Optional description",
+    "poster_path": "/path/to/poster.jpg"
   }
-]
-```
+  ```
+- **Response (201):** Empty body.
 
-### Search Series
+### Edit Movie
+**`PUT /api/v1/movies/edit`** (Auth Required)
+- **Request Body:** `{"id": 1, "title": "Updated Title"}`
+- **Response (200):** Empty body.
 
-Endpoint:
+### Stream Movie
+**`GET /api/v1/movies/stream?id=1`** (Auth Required)
+- **Response:** Binary video stream (HTTP 206 Partial Content supported).
 
-```http
-GET /api/series/search?q={query}
-```
+---
 
-- **Requires Auth**: Yes
-- **Description**: Search for series by title or description.
-- **Parameters**:
-  - `q` (string, required): The search query.
-- **Response**: JSON array of matching series.
+## 📺 Series & Episodes
+
+### List Series
+**`GET /api/v1/series`** (Auth Required)
+- **Response:**
+  ```json
+  [
+    {
+      "id": 1,
+      "title": "Breaking Bad",
+      "description": "Series description",
+      "created_at": "2026-01-01T00:00:00Z"
+    }
+  ]
+  ```
 
 ### Add Series
-
-Endpoint:
-
-```http
-POST /api/series/add
-```
-
-- **Requires Auth**: Yes
-- **Description**: Create a new series entry.
-- **Body**: JSON object.
-
-Example Request:
-
-```json
-{
-  "title": "Stranger Things",
-  "description": "When a young boy disappears, his mother, a police chief and his friends must confront terrifying supernatural forces."
-}
-```
-
-- **Response**: HTTP 201 Created.
+**`POST /api/v1/series/add`** (Auth Required)
+- **Request Body:** `{"title": "Breaking Bad", "description": "Crime drama"}`
+- **Response (201):** Empty body.
 
 ### Edit Series
-
-Endpoint:
-
-```http
-PUT /api/series/edit
-```
-
-- **Requires Auth**: Yes
-- **Description**: Update an existing series information.
-- **Body**: JSON object.
-
-Example Request:
-
-```json
-{
-  "id": 1,
-  "title": "Stranger Things (Season 1)",
-  "description": "Updated description..."
-}
-```
-
-- **Response**: HTTP 200 OK.
-
----
-
-## 🎞️ Episode Management
+**`PUT /api/v1/series/edit`** (Auth Required)
+- **Request Body:** `{"id": 1, "title": "Updated Title"}`
+- **Response (200):** Empty body.
 
 ### List Episodes
-
-Endpoint:
-
-```http
-GET /api/series/episodes/list?series_id={id}
-```
-
-- **Requires Auth**: Yes
-- **Description**: List all episodes for a specific series, ordered by season and episode number.
-- **Parameters**:
-  - `series_id` (int, required): ID of the series.
-- **Response**: JSON array of episode objects.
-
-Example Response:
-
-```json
-[
-  {
-    "id": 101,
-    "series_id": 1,
-    "season_number": 1,
-    "episode_number": 1,
-    "title": "The Vanishing of Will Byers",
-    "description": "On his way home from a friend's house, young Will sees something terrifying...",
-    "file_path": "/path/to/S01E01.mp4",
-    "size": 104857600,
-    "mime_type": "video/mp4",
-    "created_at": "2023-10-27T10:05:00Z"
-  }
-]
-```
+**`GET /api/v1/series/episodes?series_id=1`** (Auth Required)
+- **Response:**
+  ```json
+  [
+    {
+      "id": 101,
+      "series_id": 1,
+      "season_number": 1,
+      "episode_number": 1,
+      "title": "Pilot",
+      "file_path": "/path/to/episode.mp4",
+      "size": 524288000,
+      "mime_type": "video/mp4"
+    }
+  ]
+  ```
 
 ### Add Episode
-
-Endpoint:
-
-```http
-POST /api/series/episodes/add
-```
-
-- **Requires Auth**: Yes
-- **Description**: Add an episode to a series.
-- **Body**: JSON object.
-
-Example Request:
-
-```json
-{
-  "series_id": 1,
-  "file_id": 123,
-  "file_path": "/media/series/stranger_things/s01e01.mp4",
-  "season_number": 1,
-  "episode_number": 1,
-  "title": "Chapter One",
-  "description": "The pilot episode."
-}
-```
-
-- **Response**: HTTP 201 Created.
+**`POST /api/v1/series/episodes/add`** (Auth Required)
+- **Request Body:**
+  ```json
+  {
+    "series_id": 1,
+    "file_id": 10,
+    "file_path": "/path/to/episode.mp4",
+    "season_number": 1,
+    "episode_number": 1,
+    "title": "Pilot",
+    "description": "Episode 1 description"
+  }
+  ```
+- **Response (201):** Empty body.
 
 ### Stream Episode
-
-Endpoint:
-
-```http
-GET /api/stream/episode?id={episode_id}
-```
-
-- **Requires Auth**: Yes
-- **Description**: Stream the episode video content. Supports HTTP Range requests for seeking.
-- **Parameters**:
-  - `id` (int, required): The ID of the episode to stream.
-- **Response**: Video stream (binary content).
-
----
+**`GET /api/v1/series/episodes/stream?id=101`** (Auth Required)
+- **Response:** Binary video stream.
