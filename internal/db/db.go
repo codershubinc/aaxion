@@ -11,7 +11,20 @@ import (
 var dbConn *sql.DB
 
 func InitDb() error {
-	dbPath := ".aaxion.db"
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+
+	appDir := homeDir + "/.aaxion"
+	if _, err := os.Stat(appDir); os.IsNotExist(err) {
+		err := os.MkdirAll(appDir, 0700) // Secure permissions
+		if err != nil {
+			return err
+		}
+	}
+
+	dbPath := appDir + "/aaxion.db"
 	isNewDb := false
 
 	// create DB file if not exists
@@ -25,7 +38,6 @@ func InitDb() error {
 	}
 
 	//connect to db
-	var err error
 	dbConn, err = sql.Open("sqlite3", dbPath)
 
 	if err != nil {
