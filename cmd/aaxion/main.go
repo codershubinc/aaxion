@@ -2,17 +2,33 @@ package main
 
 import (
 	"aaxion/internal/api"
+	"aaxion/internal/cli"
 	"aaxion/internal/db"
 	"aaxion/internal/discovery"
-	"aaxion/internal/ws"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
-	"strings"
 )
 
+func init() {
+	cli.RegisterCommand(cli.Command{
+		Name:        "serve",
+		Description: "Start the Aaxion web server (default)",
+		Run: func(args []string) {
+			err := db.InitDb()
+			if err != nil {
+				log.Fatal("Got err initializing DB:", err)
+			}
+			startServer()
+		},
+	})
+}
+
 func main() {
+	cli.Execute()
+}
+
+func startServer() {
 	fmt.Println(`
     _        _    __  __  ___   ___   _   _ 
    / \      / \   \ \/ / |_ _| / _ \ | \ | |
@@ -20,110 +36,20 @@ func main() {
  / ___ \  / ___ \ / /\ \  | | | |_| || |\  |
 /_/   \_\/_/   \_\/_/\_\ |___| \___/ |_| \_|
 `)
-	err := db.InitDb()
-	if err != nil {
-		log.Println("Got err", err)
-	}
-	startServer()
-}
 
-func startServer() {
 	port := 8080
 	fmt.Println("Starting server...")
 	api.RegisterRoutes()
-	api.AddMusicRoutes()
-	wsInit()
 
 	discovery.StartDiscoveryService(port)
 	log.Println("mDNS discovery service started at port", port)
 
-	handler := corsMiddleware(http.DefaultServeMux)
+	// Wrap the default ServeMux with the CORS middleware
+	handler := api.CORSMiddleware(http.DefaultServeMux)
 
 	log.Printf("Listening on :%d", port)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), handler)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
-}
-
-// i know this is a very bad way to handle CORS,  and bloated here i will fix  this later. 🥲
-
-func corsMiddleware(next http.Handler) http.Handler {
-	// Get all local IPs
-	localIPs, err := GetAllLocalIPs()
-	if err != nil {
-		fmt.Printf("Error getting local IPs: %v\n", err)
-	}
-	// Add common localhost and tunnel domain variants
-	localIPs = append(localIPs, "localhost", "127.0.0.1")
-	localIPs = append(localIPs, "aaxion-client.codershubinc.com", "aaxioncdn.codershubinc.com", "codershubinc.com", "aaxion-cdn.codershubinc.tech")
-
-	fmt.Printf("Allowing CORS for IPs/Domains: %v\n", localIPs)
-
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		origin := r.Header.Get("Origin")
-
-		// Allow requests from any local IP or registered domain
-		if origin != "" {
-			for _, ip := range localIPs {
-				if strings.Contains(origin, ip) {
-					w.Header().Set("Access-Control-Allow-Origin", origin)
-					break
-				}
-			}
-			// Fallback: If no header set yet but origin is provided, mirror origin to avoid CORS blockage
-			if w.Header().Get("Access-Control-Allow-Origin") == "" {
-				w.Header().Set("Access-Control-Allow-Origin", origin)
-			}
-		} else {
-			w.Header().Set("Access-Control-Allow-Origin", "*")
-		}
-
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, PROPFIND, PROPPATCH, MKCOL, COPY, MOVE, LOCK, UNLOCK")
-		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Depth, Destination, If, Overwrite, Timeout, Range")
-		w.Header().Set("Access-Control-Expose-Headers", "Content-Length, Content-Range, Accept-Ranges, Content-Type, Content-Disposition")
-
-		if strings.HasPrefix(r.URL.Path, "/webdav") {
-			next.ServeHTTP(w, r)
-			return
-		}
-
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
-
-func GetAllLocalIPs() ([]string, error) {
-	var ips []string
-	ifaces, err := net.Interfaces()
-	if err != nil {
-		return nil, err
-	}
-	for _, i := range ifaces {
-		addrs, err := i.Addrs()
-		if err != nil {
-			continue
-		}
-		for _, addr := range addrs {
-			var ip net.IP
-			switch v := addr.(type) {
-			case *net.IPNet:
-				ip = v.IP
-			case *net.IPAddr:
-				ip = v.IP
-			}
-			if ip != nil && !ip.IsLoopback() {
-				ips = append(ips, ip.String())
-			}
-		}
-	}
-	return ips, nil
-}
-
-func wsInit() {
-	http.HandleFunc("/ws", ws.Handler)
 }

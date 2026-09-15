@@ -11,10 +11,12 @@ import (
 var dbConn *sql.DB
 
 func InitDb() error {
-	// create DB file if not exists
-
 	dbPath := ".aaxion.db"
+	isNewDb := false
+
+	// create DB file if not exists
 	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
+		isNewDb = true
 		file, err := os.Create(dbPath)
 		if err != nil {
 			return err
@@ -31,8 +33,9 @@ func InitDb() error {
 		return err
 	}
 
-	//create tables if not exist
-	log.Println("Creating tables")
+	if isNewDb {
+		log.Println("Initializing new database tables...")
+	}
 
 	schemas := []string{
 		tokensTableSchema,
@@ -56,7 +59,10 @@ func InitDb() error {
 			return err
 		}
 	}
-	log.Println("DB initialized successfully")
+	
+	if isNewDb {
+		log.Println("DB initialized successfully")
+	}
 	return nil
 }
 
