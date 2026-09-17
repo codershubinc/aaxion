@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v0.0.1-beta-1] "Proton" [Unreleased]
 
 ### Added
 
@@ -21,8 +21,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Auth Middleware**: Refactored the token query parameter parsing (`?tkn=`) to cleanly iterate over an array of permitted endpoints (`thumbnail`, `stream`, etc.), resolving strict-matching 401 Unauthorized errors.
 - **Website UI**: Added dynamic OS-detection `<InstallCommand>` toggles to the documentation frontend.
 - **Storage Compatibility**: Split `syscall.Statfs` implementations using Go build tags (`_unix.go` and `_windows.go`) to prevent cross-compilation panics on Windows.
-
-### Fixed
-
-- Fixed Next.js hydration mismatches on the dashboard caused by browser extensions injecting into SVG and HTML elements.
-- Fixed an authentication bypass loop where the middleware would throw 401 Unauthorized on thumbnail streams by strictly expecting short-lived access tokens instead of allowing primary session tokens.
