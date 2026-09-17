@@ -11,13 +11,13 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		authHeader := r.Header.Get("Authorization")
 		authQuery := r.URL.Query().Get("tkn")
 
-		if authQuery != "" && (strings.Contains(r.URL.String(), "/files/thumbnail") ||
-			strings.Contains(r.URL.String(), "/files/download") ||
-			strings.Contains(r.URL.String(), "/api/stream/movie") ||
-			strings.Contains(r.URL.String(), "/files/view-image") ||
-			strings.Contains(r.URL.String(), "/api/stream/episode") ||
-			strings.Contains(r.URL.String(), "/api/stream") ||
-			strings.Contains(r.URL.String(), "/files/stream")) {
+		if authQuery != "" && (strings.Contains(r.URL.String(), "/api/v1/files/thumbnail") ||
+			strings.Contains(r.URL.String(), "/api/v1/files/download") ||
+			strings.Contains(r.URL.String(), "/api/v1/stream/movie") ||
+			strings.Contains(r.URL.String(), "/api/v1/files/view-image") ||
+			strings.Contains(r.URL.String(), "/api/v1/stream/episode") ||
+			strings.Contains(r.URL.String(), "/api/v1/stream") ||
+			strings.Contains(r.URL.String(), "/api/v1/files/stream")) {
 			authHeader = "Bearer " + authQuery
 		}
 
