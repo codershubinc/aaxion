@@ -14,6 +14,7 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		if authQuery != "" {
 			allowedPaths := []string{
 				"/api/v1/images/thumbnail",
+				"/api/v1/images/thumb",
 				"/api/v1/files/download",
 				"/api/v1/movies/stream",
 				"/api/v1/images/view",

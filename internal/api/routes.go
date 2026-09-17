@@ -53,6 +53,7 @@ func RegisterRoutes() {
 
 	// Images
 	http.HandleFunc("/api/v1/images/thumbnail", auth.AuthMiddleware(img.ServeThumbnail))
+	http.HandleFunc("/api/v1/images/thumb", auth.AuthMiddleware(img.ServeThumbnail))
 	http.HandleFunc("/api/v1/images/view", auth.AuthMiddleware(img.ViewImage))
 
 	// ==========================================
