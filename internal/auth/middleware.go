@@ -44,7 +44,7 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		// For access token
 
-		if strings.Contains(r.URL.String(), "/api/token/generate") {
+		if strings.Contains(r.URL.String(), "/api/v1/auth/token/generate") {
 			valid, err := db.VerifyToken(token)
 			if err != nil {
 				http.Error(w, "Server error", http.StatusInternalServerError)
