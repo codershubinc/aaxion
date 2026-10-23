@@ -38,6 +38,16 @@ func InitDb() error {
 	if err != nil {
 		return err
 	}
+
+	_, err = dbConn.Exec(usersTableSchema)
+	if err != nil {
+		return err
+	}
+
+	_, err = dbConn.Exec(authTokensTableSchema)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
